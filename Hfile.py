@@ -20,7 +20,7 @@ def filterData(key):
 
 def changeTimeFormat(flightPlan):
     """Changes the time format from yyyymmddhhmmss and updates the dictionary with 3 new keys (hour, min, sec) for arrivals and departures.
-    Harcoded to UTC + 1."""
+    Harcoded for UTC + 1."""
     time = int(flightPlan.pop('scheduled_arrival'))
     time = time - math.trunc(time / 1e6) * 1e6
     aHour = math.trunc(time / 1e4)
@@ -60,11 +60,11 @@ def getFlightTime(flightPlan):
 
 
 def getDistance(flightPlan):
-    """Returns the distance of the flight plan"""
-    time = getFlightTime(flightPlan)
-    pass
-
-    #return (speed / time)
+    """Returns the distance of the flight plan."""
+    time = getFlightTime(flightPlan)    # min
+    speed = avSpeeds.get(flightPlan.get('aircraft_type'))
+    speed /= 60 # km/h -> km/min
+    return (speed / time)
 
 
 def aggregateDemand():
@@ -74,11 +74,13 @@ def aggregateDemand():
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
 
-speeds = {'A321' : 833, 'A320' : 962, 'B737' : 912, 'B738' : 853, 'C510' : 478, 'PC12' : 528, 'C25A' : 426, 'B733' : 794,
+avSpeeds = {'A321' : 833, 'A320' : 962, 'B737' : 912, 'B738' : 853, 'C510' : 478, 'PC12' : 528, 'C25A' : 426, 'B733' : 794,
           'A319' : 828, 'E145' : 814, 'E190' : 829, 'LJ60' : 778, 'B77W' : 907, 'B350' : 518, 'B764' : 851, 'CRJX' : 830,
           'CRJ2' : 810, 'B734' : 796, 'F100' : 750, 'B763' : 851, 'B752' : 870, 'A332' : 871, 'A343' : 871, 'F900' : 944,
           'B739' : 851, 'AT75' : 518, 'F2TH' : 870, 'A333' : 871, 'A388' : 963, 'B77L' : 907, 'GLF5' : 888, 'E120' : 552,
           'H25B' : 537, 'BE10' : 407}
+
+
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 # GET ALL THE FLIGHTS AND FILTER THEM TO ONLY ARRIVALS AT LEBL
@@ -89,13 +91,6 @@ arrivals = filterData('LEBL')
 for i in range(len(arrivals)):
     arrivals[i] = changeTimeFormat(arrivals[i])
 
-aviones = []
-for k in arrivals:
-    avion = k.get('aircraft_type')
-    if avion not in aviones:
-        aviones.append(avion)
-
-print(aviones)
 
 hours = [i for i in range(0, 24)]
 
