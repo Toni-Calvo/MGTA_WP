@@ -200,27 +200,68 @@ def plotDemandAndCapacity(flightPlans, AAR, PAAR, rStart, rEnd):
     """Plots the demand and capacity over the time of the day."""
     x = [i for i in np.arange(0, 24, 1/60)]
     y = [0] * len(x)
-    demand = 0
-    listIndex = 0
-    fpIndex = 0
-    while listIndex != len(x):
-        if flightPlans[fpIndex].get('aHour') + flightPlans[fpIndex].get('aMin')/60 == x[listIndex]:
-            demand += 1
-            fpIndex += 1          
-            y[listIndex] = demand
-        else:
-            y[listIndex] = demand
-            listIndex += 1
+    capacity = [0] * len(x)
+    HnoReg = [24, 0]
     
+    for flightPlan in flightPlans:
+        index = flightPlan.get('aHour')*60 + flightPlan.get('aMin')
+        while index < len(y):
+            y[index] += 1
+            index += 1
+            
+    if 60 % PAAR != 0:
+        PSlot = 60 // PAAR + 1
+    else:
+        PSlot = 60 // PAAR
+        
+    if 60 % AAR != 0:
+        ASlot = 60 // AAR + 1
+    else:
+        ASlot = 60 // AAR
+        
+    for i in range(len(capacity)):
+        if rStart * 60 == i:
+            capacity[i] = y[i]
+        elif rStart * 60 < i < rEnd * 60:
+            capacity[i] = capacity[i - 1] + int(10/PSlot)/10
+        elif rEnd * 60 <= i:
+            capacity[i] = capacity[i - 1] + int(10/ASlot)/10
+            if capacity[i] > y[i]:
+                capacity[i] = y[i]
+                HnoReg = [i//60, i%60]
+                for k in range(i + 1, len(capacity)):
+                    capacity[k] = None
+                break
+        else:
+            capacity[i] = None
+                 
     plt.plot(x, y)
+    plt.plot(x, capacity, color='red')
     plt.xlim(0, 24)
     plt.xticks(np.arange(0, 24, 1))
     plt.xlabel('Time of the day')
     plt.ylabel('Demand')
     plt.show()
+    return HnoReg
+
+
+def affectedFlights(rStart, HnoReg, fpDic):
+    """Returns the ammount of affected flights by the GDP."""
+    affected = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if rStart * 60 < (int(key.split(':')[0]) * 60 + int(key.split(':')[1])) <= (HnoReg[0] * 60 + HnoReg[1]):
+                affected += 1
     
+    return affected
+            
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
+
+AAR = 38
+PAAR = 12
+rStart = 8
+rEnd = 12
 
 avSpeeds = {'A321' : 833, 'A320' : 962, 'B737' : 912, 'B738' : 853, 'C510' : 478, 'PC12' : 528, 'C25A' : 426, 'B733' : 794,
             'A319' : 828, 'E145' : 814, 'E190' : 829, 'LJ60' : 778, 'B77W' : 907, 'B350' : 518, 'B764' : 851, 'CRJX' : 830,
@@ -269,16 +310,12 @@ def main():
     return arrivals
 
 arrivals = main()
-airports = []
-for k in arrivals:
-    if k.get('departure_airport') not in airports:
-        airports.append(k.get('departure_airport'))
 
-
-fpDic = assignSlots(arrivals, getSlots(38, 19, 8, 13))
+fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
 plotOriginalArrOverTime(arrivals)
 plotSlotsArrOverTime(fpDic)
 
 print(aggregateDelay(fpDic))
 plotAggregateDelay(fpDic)
-plotDemandAndCapacity(arrivals, 38, 19, 8, 13)
+HnoReg = plotDemandAndCapacity(arrivals, AAR, PAAR, rStart, rEnd)
+print(affectedFlights(rStart, HnoReg, fpDic))
