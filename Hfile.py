@@ -308,6 +308,7 @@ seats = {'A321' : 220, 'A320' : 180, 'B737' : 189, 'B738' : 181, 'C510' : 4, 'PC
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 def main():
+    """Returns arrivals ordered by arrival time."""
     # GET ALL THE FLIGHTS AND FILTER THEM TO ONLY ARRIVALS AT LEBL
     arrivals = parse_allft_plus_file("20160129.ALL_FT+")
     arrivals = filterData('LEBL', arrivals)
