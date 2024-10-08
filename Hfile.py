@@ -128,7 +128,7 @@ def sortByArrTime(flightPlans):
     return flightPlans
 
 
-def plotOriginalArrOverTime(flightPlans, rStart, rEnd, AAR, PAAR):
+def plotOriginalArrOverTime(flightPlans, rStart, rEnd, AAR, PAAR, print):
     """Plots the ammount of arrivals over the time of the day."""
     x = [i for i in range(24)]
     y = [0] * 24
@@ -155,17 +155,18 @@ def plotOriginalArrOverTime(flightPlans, rStart, rEnd, AAR, PAAR):
         else:
             yPAAR.append(None)
     
-    plt.plot(x,yAAR, color='green')
-    plt.plot(x,yPAAR, color='red')
-    plt.bar(x, y)
-    plt.xlim(0, 24)
-    plt.xticks(np.arange(0, 24, 1))
-    plt.xlabel('Time of the day')
-    plt.ylabel('# of arrivals')
-    plt.show()
+    if print:
+        plt.plot(x,yAAR, color='green')
+        plt.plot(x,yPAAR, color='red')
+        plt.bar(x, y)
+        plt.xlim(0, 24)
+        plt.xticks(np.arange(0, 24, 1))
+        plt.xlabel('Time of the day')
+        plt.ylabel('# of arrivals')
+        plt.show()
 
 
-def plotSlotsArrOverTime(fpDic):
+def plotSlotsArrOverTime(fpDic,print):
     """Plots the ammount of arrivals over the time of the day following the assigned slots."""
     x = [i for i in range(24)]
     y = [0] * 24
@@ -173,12 +174,14 @@ def plotSlotsArrOverTime(fpDic):
         if fpDic.get(key) != None:
             y[int(key.split(':')[0])] += 1
         
-    plt.bar(x, y)
-    plt.xlim(0, 24)
-    plt.xticks(np.arange(0, 24, 1))
-    plt.xlabel('Time of the day')
-    plt.ylabel('# of arrivals')
-    plt.show()
+    if print:
+        plt.bar(x, y)
+        plt.xlim(0, 24)
+        plt.xticks(np.arange(0, 24, 1))
+        plt.xlabel('Time of the day')
+        plt.ylabel('# of arrivals')
+        plt.show()
+        
     
 def aggregateDelay(fpDic):
     """Returns the total delay of the day."""
@@ -192,7 +195,7 @@ def aggregateDelay(fpDic):
     return delay
 
 
-def plotAggregateDelay(fpDic):
+def plotAggregateDelay(fpDic, print):
     """Plots the aggregated delay over the time of the day."""
     x = []
     y = []
@@ -206,15 +209,16 @@ def plotAggregateDelay(fpDic):
                 
         y.append(delay)
         
-    plt.plot(x, y)
-    plt.xlim(0, 24)
-    plt.xticks(np.arange(0, 24, 1))
-    plt.xlabel('Time of the day')
-    plt.ylabel('Delay [min]')
-    plt.show()
+    if print:
+        plt.plot(x, y)
+        plt.xlim(0, 24)
+        plt.xticks(np.arange(0, 24, 1))
+        plt.xlabel('Time of the day')
+        plt.ylabel('Delay [min]')
+        plt.show()
 
 
-def plotDemandAndCapacity(flightPlans, AAR, PAAR, rStart, rEnd):
+def plotDemandAndCapacity(flightPlans, AAR, PAAR, rStart, rEnd, print):
     """Plots the demand and capacity over the time of the day."""
     x = [i for i in np.arange(0, 24, 1/60)]
     y = [0] * len(x)
@@ -252,14 +256,16 @@ def plotDemandAndCapacity(flightPlans, AAR, PAAR, rStart, rEnd):
                 break
         else:
             capacity[i] = None
-                 
-    plt.plot(x, y)
-    plt.plot(x, capacity, color='red')
-    plt.xlim(0, 24)
-    plt.xticks(np.arange(0, 24, 1))
-    plt.xlabel('Time of the day')
-    plt.ylabel('Demand')
-    plt.show()
+    
+    if print:          
+        plt.plot(x, y)
+        plt.plot(x, capacity, color='red')
+        plt.xlim(0, 24)
+        plt.xticks(np.arange(0, 24, 1))
+        plt.xlabel('Time of the day')
+        plt.ylabel('Demand')
+        plt.show()
+        
     return HnoReg
 
 
@@ -306,7 +312,7 @@ seats = {'A321' : 220, 'A320' : 180, 'B737' : 189, 'B738' : 181, 'C510' : 4, 'PC
 
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
-def main():
+def main(plot=False):
     """Returns arrivals ordered by arrival time."""
     # GET ALL THE FLIGHTS AND FILTER THEM TO ONLY ARRIVALS AT LEBL
     arrivals = parse_allft_plus_file("20160129.ALL_FT+")
@@ -327,15 +333,14 @@ def main():
         else:
             arrivals.remove(arrivals[index])
         
-    return arrivals
+    fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
+    plotOriginalArrOverTime(arrivals, rStart, rEnd, AAR, PAAR, plot)
+    plotSlotsArrOverTime(fpDic, plot)
 
-arrivals = main()
+    print(aggregateDelay(fpDic))
+    plotAggregateDelay(fpDic, plot)
+    HnoReg = plotDemandAndCapacity(arrivals, AAR, PAAR, rStart, rEnd, plot)
+    print(affectedFlights(rStart, HnoReg, fpDic))
+    return arrivals, HnoReg
 
-fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
-plotOriginalArrOverTime(arrivals, rStart, rEnd, AAR, PAAR)
-plotSlotsArrOverTime(fpDic)
-
-print(aggregateDelay(fpDic))
-plotAggregateDelay(fpDic)
-HnoReg = plotDemandAndCapacity(arrivals, AAR, PAAR, rStart, rEnd)
-print(affectedFlights(rStart, HnoReg, fpDic))
+main()
