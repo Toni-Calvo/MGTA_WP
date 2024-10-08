@@ -129,13 +129,35 @@ def sortByArrTime(flightPlans):
     return flightPlans
 
 
-def plotOriginalArrOverTime(flightPlans):
+def plotOriginalArrOverTime(flightPlans, rStart, rEnd, AAR, PAAR):
     """Plots the ammount of arrivals over the time of the day."""
     x = [i for i in range(24)]
     y = [0] * 24
     for flightPlan in flightPlans:
         y[flightPlan.get('aHour')] += 1
-        
+    
+    yAAR = []
+    for i in range(0, 24):
+        if rStart <= i < rEnd:
+            yAAR.append(None)
+        else:
+            if 60 % AAR != 0:
+                yAAR.append(((60//AAR) + 1)**-1 * 60)
+            else:
+                yAAR.append(AAR)
+            
+    yPAAR = []
+    for i in range(0, 24):
+        if rStart <= i < rEnd:
+            if 60 % PAAR != 0:
+                yPAAR.append(((60//PAAR) + 1)**-1 * 60)
+            else:
+                yPAAR.append(PAAR)
+        else:
+            yPAAR.append(None)
+    
+    plt.plot(x,yAAR, color='green')
+    plt.plot(x,yPAAR, color='red')
     plt.bar(x, y)
     plt.xlim(0, 24)
     plt.xticks(np.arange(0, 24, 1))
@@ -255,10 +277,11 @@ def affectedFlights(rStart, HnoReg, fpDic):
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
 
+Hfile = 6
 AAR = 38
 PAAR = 12
 rStart = 8
-rEnd = 12
+rEnd = 13
 
 avSpeeds = {'A321' : 833, 'A320' : 962, 'B737' : 912, 'B738' : 853, 'C510' : 478, 'PC12' : 528, 'C25A' : 426, 'B733' : 794,
             'A319' : 828, 'E145' : 814, 'E190' : 829, 'LJ60' : 778, 'B77W' : 907, 'B350' : 518, 'B764' : 851, 'CRJX' : 830,
@@ -309,7 +332,7 @@ def main():
 arrivals = main()
 
 fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
-plotOriginalArrOverTime(arrivals)
+plotOriginalArrOverTime(arrivals, rStart, rEnd, AAR, PAAR)
 plotSlotsArrOverTime(fpDic)
 
 print(aggregateDelay(fpDic))
