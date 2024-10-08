@@ -64,11 +64,8 @@ def getDistance(flightPlan):
     time = getFlightTime(flightPlan)    # min
     speed = avSpeeds.get(flightPlan.get('aircraft_type'))
     speed /= 60 # km/h -> km/min
-    return (speed / time)
+    return speed * time
 
-
-def aggregateDemand():
-    pass
 
 
 def isInECAC(flightPlan):
