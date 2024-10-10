@@ -1,4 +1,4 @@
-from Hfile import main, isInECAC, getDistance, getSlots, plotSlotsArrOverTime
+from wp1 import main, isInECAC, getDistance, getSlots, plotSlotsArrOverTime
 
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
@@ -11,7 +11,6 @@ rEnd = 13 # h
 margin = 30 # min
 radius = 1500 # km
 
-distanceAirport = {'UUEE', 'LROP', 'DAAG', 'LFRI', 'ENGM', 'LIML', 'EDQA', 'ESGG', 'EDDF', 'EVRA', 'GCLP', 'EDDV', 'ELLX', 'LHBP', 'EDDM', 'EKCH', 'LEMD', 'EDDH', 'EIDW', 'LFPO', 'LSGG', 'EDDT', 'LESO', 'LEST', 'EHAM', 'LEPA', 'LEMH', 'LEAL', 'LEBB', 'LPPT', 'EGKK', 'LECO', 'LEMG', 'LEZL', 'EBBR', 'LEIB', 'LIMC', 'LIRF', 'LLBG', 'LEGR', 'LEVX', 'LEAS', 'LFPG', 'SBGR', 'LSZH', 'LGAV', 'GCXO', 'EGBB', 'GMMN', 'LRTR', 'LFSB', 'EDDB', 'KEWR', 'EGCC', 'EGLL', 'LKPR', 'EBLG', 'LTFJ', 'LOWW', 'LPPR', 'GCTS', 'KJFK', 'EPWA', 'LFLL', 'LIPZ', 'EGPH', 'LFML', 'EHEH', 'LFRN', 'LIRN', 'SAEZ', 'GCRR', 'ESSA', 'EBOS', 'EDDP', 'EDDK', 'EDDL', 'LIBD', 'EDDS', 'LEVD', 'EGSS', 'LICJ', 'LIME', 'OTHH', 'EHRD', 'LFOB', 'EGGP', 'LEVC', 'EPMO', 'LFBD', 'LEAM', 'LTBA', 'LRCL', 'LIMF', 'SKBO', 'LFMN', 'HECA', 'LBSF', 'OMDB', 'EBAW', 'GMFF', 'LIRQ', 'LEXJ', 'EGNT', 'EGGW', 'EGGD', 'EGNM', 'LFRS', 'LEJR', 'GMMX', 'LIRP', 'LIPE', 'GMMW', 'DTTA', 'LIPH', 'LELN', 'EFHK', 'LEZG', 'LFLI', 'GCFV', 'GMTT'}
 
 # --------------------------------------------------------------------------------------------
 # FUNCTIONS
@@ -73,7 +72,7 @@ def assignSlots(exemptFlights, restFlights, slots):
     return fpDic
 
 
-def computeDelay(fpDic):
+def computeTotalDelays(fpDic):
     """Computes the delay for each flight plan and returns the flightPlans, the total exempt, ground, and not affected delay."""
     totalExemptDelay = 0
     totalNotAffectedDelay = 0
@@ -99,6 +98,53 @@ def computeDelay(fpDic):
                         totalNotAffectedDelay += delay
     
     return fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay
+
+
+def printFlightTypes(fpDic):
+    """Prints the ammount of Flight Plans of each type."""
+    notAffected = 0
+    exempt = 0
+    regulated = 0
+    
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('type') == 'Not affected':
+                notAffected += 1
+            elif fpDic.get(key).get('type') == 'Exempt':
+                exempt += 1
+            else:
+                regulated += 1
+    
+    print(f'Not affected: {notAffected}\nExempt: {exempt}\nRegulated: {regulated}')
+
+
+def assignCTAandCTD(fpDic):
+    """Assigns the CTA and CTD to each flight plan."""
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('gDelay') != 0:
+                fpDic.get(key).update({'CTA' : int(key.split(':')[0]) * 60 + int(key.split(':')[1])})
+                fpDic.get(key).update({'CTD' : fpDic.get(key).get('dHour') * 60 + fpDic.get(key).get('dMin') + fpDic.get(key).get('gDelay')})
+            if fpDic.get(key).get('aDelay') != 0:
+                fpDic.get(key).update({'CTA' : int(key.split(':')[0]) * 60 + int(key.split(':')[1])})
+                fpDic.get(key).update({'CTD' : fpDic.get(key).get('dHour') * 60 + fpDic.get(key).get('dMin')})
+            else:
+                fpDic.get(key).update({'CTA' : fpDic.get(key).get('aHour') * 60 + fpDic.get(key).get('aMin')})
+                fpDic.get(key).update({'CTD' : fpDic.get(key).get('dHour') * 60 + fpDic.get(key).get('dMin')})
+                
+    return fpDic
+
+
+def printUnrecGDelay(fpDic, rStart):
+    """Prints the unrecoverable ground delay applied before rStart"""
+    delay = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('gDelay') != 0 and fpDic.get(key).get('CTD') < rStart * 60:
+                delay += fpDic.get(key).get('gDelay')
+    
+    print(f'Unrecoverable ground delay applied before {rStart}:00: {delay} min')
+                
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 
@@ -108,6 +154,9 @@ arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
 exempt, rest = separateFlights(arrivals)
 fpDic = assignSlots(exempt, rest, slots)
 
-fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeDelay(fpDic)
+fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeTotalDelays(fpDic)
 print(f'Total exempt delay: {totalExemptDelay} min\nTotal ground delay: {totalGroundDelay} min\nTotal not affected delay: {totalNotAffectedDelay} min')
 plotSlotsArrOverTime(fpDic, True)
+printFlightTypes(fpDic)
+fpDic = assignCTAandCTD(fpDic)
+printUnrecGDelay(fpDic, rStart)
