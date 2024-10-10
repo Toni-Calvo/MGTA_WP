@@ -340,8 +340,8 @@ def main(plot=False):
 
     plotAggregateDelay(fpDic, plot)
     HnoReg = plotDemandAndCapacity(arrivals, AAR, PAAR, rStart, rEnd, plot)
-    print(aggregateDelay(fpDic, HnoReg))
-    print(affectedFlights(rStart, HnoReg, fpDic))
+    #print(aggregateDelay(fpDic, HnoReg))
+    #print(affectedFlights(rStart, HnoReg, fpDic))
     return arrivals, HnoReg
 
 main()
