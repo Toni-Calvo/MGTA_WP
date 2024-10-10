@@ -183,14 +183,15 @@ def plotSlotsArrOverTime(fpDic,print):
         plt.show()
         
     
-def aggregateDelay(fpDic):
+def aggregateDelay(fpDic, HnoReg):
     """Returns the total delay of the day."""
     delay = 0
     for key in fpDic:
         if fpDic.get(key) != None:
-            addedDelay = (int(key.split(':')[0]) * 60 + int(key.split(':')[1])) - (fpDic.get(key).get('aHour') * 60 + fpDic.get(key).get('aMin'))
-            if addedDelay > 0:
-                delay += addedDelay
+            if fpDic.get(key).get('aHour') < HnoReg[0] or (fpDic.get(key).get('aHour') == HnoReg[0] and fpDic.get(key).get('aMin') < HnoReg[1]):
+                addedDelay = (int(key.split(':')[0]) * 60 + int(key.split(':')[1])) - (fpDic.get(key).get('aHour') * 60 + fpDic.get(key).get('aMin'))
+                if addedDelay > 0:
+                    delay += addedDelay
                 
     return delay
 
@@ -337,9 +338,9 @@ def main(plot=False):
     plotOriginalArrOverTime(arrivals, rStart, rEnd, AAR, PAAR, plot)
     plotSlotsArrOverTime(fpDic, plot)
 
-    print(aggregateDelay(fpDic))
     plotAggregateDelay(fpDic, plot)
     HnoReg = plotDemandAndCapacity(arrivals, AAR, PAAR, rStart, rEnd, plot)
+    print(aggregateDelay(fpDic, HnoReg))
     print(affectedFlights(rStart, HnoReg, fpDic))
     return arrivals, HnoReg
 
