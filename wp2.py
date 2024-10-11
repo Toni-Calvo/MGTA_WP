@@ -179,6 +179,7 @@ def computePollution(fpDic):
 
 def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
     """A new assignation of slots without the cancelled flights."""
+    # Detect cancelled flights
     cancelled = []
     for key in fpDic:
         if fpDic.get(key) != None:
@@ -190,22 +191,60 @@ def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
     print(f'Cancelled flights: {len(cancelled)}')
     
     notAssigned = cancelled.copy()
+    # Assign reserved slots
     for slotIndex in range(len(slots) - 1):
-        if fpDic.get(slots[slotIndex]) != None:
-            if (int(fpDic.get(slots[slotIndex]).get('aHour')) * 60 + int(fpDic.get(slots[slotIndex]).get('aMin'))) < slots[slotIndex + 1]:
-                pass
-                        
-            
-    
-    print(f'Re-assigned flights: {len(cancelled) - len(notAssigned)}')
+        key = str(slots[slotIndex] // 60) + ':' + str(slots[slotIndex] % 60)
+        nextKey = str(slots[slotIndex + 1] // 60) + ':' + str(slots[slotIndex + 1] % 60)
+        
+        if fpDic.get(key) == None:
+            continue
+        
+        if key in notAssigned:
+            nextFPkey = getNextFPNotCancelled(fpDic, slotIndex, slots, cancelledAirline)
+            if canMoveSlot(nextKey, fpDic.get(nextFPkey)):
+                fpDic.update({key : fpDic.get(nextFPkey)})
+                fpDic.update({nextFPkey : None})
+            else:
+                fpDic.update({key : None})
                 
-
-def returnIndex(slots, time):
-    """Returns the index of the slot that has the same time as the input time."""
-    for index in range(len(slots)):
-        if slots[index] == time:
-            return index
+            notAssigned.remove(key)
+        
+        if len(notAssigned) == 0:
+            break
+        
+    # Compress
+    for slotIndex in range(1, len(slots) - 1):
+        key = str(slots[slotIndex] // 60) + ':' + str(slots[slotIndex] % 60)
+        nextKey = str(slots[slotIndex + 1] // 60) + ':' + str(slots[slotIndex + 1] % 60)
+        prevKey = str(slots[slotIndex - 1] // 60) + ':' + str(slots[slotIndex - 1] % 60)
+        
+        if fpDic.get(key) == None:
+            continue
+        
+        if fpDic.get(prevKey) == None:
+            if canMoveSlot(nextKey, fpDic.get(key)):
+                fpDic.update({prevKey : fpDic.get(key)})
+                fpDic.update({key : None})
     
+    return fpDic
+        
+        
+def getNextFPNotCancelled(fpDic, slotIndex, slots, cancelledAirline):
+    """Returns the next flight plan that is not cancelled."""
+    for slotIndex2 in range(slotIndex + 1, len(slots) - 1):
+        key = str(slots[slotIndex2] // 60) + ':' + str(slots[slotIndex2] % 60)
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('airline_code') == cancelledAirline and fpDic.get(key).get('type') == 'Regulated':
+                return key
+    
+
+def canMoveSlot(objectiveSlot, flightPlan):
+    """Returns True if the flight plan can be moved to the objective slot. The objective slot is the really the next to the objective one."""
+    time = int(objectiveSlot.split(':')[0] * 60) + int(objectiveSlot.split(':')[1])
+    if flightPlan.get('aHour') * 60 + flightPlan.get('aMin') < time:
+        return True
+    
+    return False   
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 
