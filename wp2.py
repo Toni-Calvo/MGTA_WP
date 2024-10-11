@@ -11,6 +11,8 @@ rEnd = 13 # h
 margin = 30 # min DO NOT CHANGE
 radius = 1500 # km
 CO2Factor = 3.16 # kg CO2 / kg fuel
+cancelledAirline = 'VLG'
+maxDelay = 190 # min
 
 groundConsumption = {'A321' : 600, 'A320' : 600, 'B737' : 600, 'B738' : 600, 'C510' : 200, 'PC12' : 200, 'C25A' : 200, 'B733' : 400,
                      'A319' : 600, 'E145' : 400, 'E190' : 400, 'LJ60' : 200, 'B77W' : 1000, 'B350' : 200, 'B764' : 800, 'CRJX' : 400,
@@ -174,6 +176,36 @@ def computePollution(fpDic):
     
     print(f'Total kg of CO2 of air delay: {totalPollutionAir}\nTotal kg of CO2 of ground delay: {totalPollutionGround}')
 
+
+def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
+    """A new assignation of slots without the cancelled flights."""
+    cancelled = []
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('airline_code') == cancelledAirline:
+                if fpDic.get(key).get('gDelay') > maxDelay or fpDic.get(key).get('aDelay') > maxDelay:
+                    fpDic.get(key).update({'type' : 'Cancelled'})
+                    cancelled.append(key)
+    
+    print(f'Cancelled flights: {len(cancelled)}')
+    
+    notAssigned = cancelled.copy()
+    for slotIndex in range(len(slots) - 1):
+        if fpDic.get(slots[slotIndex]) != None:
+            if (int(fpDic.get(slots[slotIndex]).get('aHour')) * 60 + int(fpDic.get(slots[slotIndex]).get('aMin'))) < slots[slotIndex + 1]:
+                pass
+                        
+            
+    
+    print(f'Re-assigned flights: {len(cancelled) - len(notAssigned)}')
+                
+
+def returnIndex(slots, time):
+    """Returns the index of the slot that has the same time as the input time."""
+    for index in range(len(slots)):
+        if slots[index] == time:
+            return index
+    
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 
@@ -190,3 +222,4 @@ printFlightTypes(fpDic)
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
+cancelledFlights(fpDic, cancelledAirline, maxDelay, slots)
