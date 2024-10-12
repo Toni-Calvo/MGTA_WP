@@ -305,6 +305,45 @@ def getExemptFlights (fpDic):
                 count += 1
     return count
 
+def numberFlightsDelayed (fpDic):
+    n_DelayedGroundFlights = 0
+    n_DelayedAirFlights = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('gDelay') != 0:
+                n_DelayedGroundFlights += 1
+            if fpDic.get(key).get('aDelay') != 0:
+                n_DelayedAirFlights += 1
+    n_DelayedTotal = n_DelayedGroundFlights + n_DelayedAirFlights
+    return n_DelayedGroundFlights, n_DelayedAirFlights, n_DelayedTotal
+
+def numberFlightsDelayedPlus15min (fpDic):
+    n_DelayedGroundFlights15 = 0
+    n_DelayedAirFlights15 = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('gDelay') > 15:
+                n_DelayedGroundFlights15 += 1
+            if fpDic.get(key).get('aDelay') > 15:
+                n_DelayedAirFlights15 += 1
+    n_DelayedTotal15 = n_DelayedGroundFlights15 + n_DelayedAirFlights15
+    return n_DelayedGroundFlights15, n_DelayedAirFlights15, n_DelayedTotal15
+
+def maximumDelay (fpDic):
+    maxDelayGround = 0
+    maxDelayAir = 0
+    maxDelayTotal = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('gDelay') > maxDelayGround:
+                maxDelayGround = fpDic.get(key).get('gDelay')
+            if fpDic.get(key).get('aDelay') > maxDelayAir:
+                maxDelayAir = fpDic.get(key).get('aDelay')
+    if maxDelayAir > maxDelayGround:
+        maxDelayTotal = maxDelayAir
+    else:
+        maxDelayTotal = maxDelayGround
+    return maxDelayGround, maxDelayAir, maxDelayTotal
 
 
             
@@ -326,6 +365,16 @@ printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
 stdev_Ground, stdev_Air = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
 print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%')
+nd_Ground, nd_Air, nd_Total = numberFlightsDelayed(fpDic)
+print(f'Ground Delayed Flights: {nd_Ground} aircrafts\nAir Delayed Flights: {nd_Air} aircrafts\nTotal Delayed Flights: {nd_Total} aircrafts')
+nd_Ground15, nd_Air15, nd_Total15 = numberFlightsDelayedPlus15min(fpDic)
+print(f'Ground Delayed Flights >15 min: {nd_Ground15} aircrafts\nAir Delayed Flights >15 min: {nd_Air15} aircrafts\nTotal Delayed Flights >15 min: {nd_Total15} aircrafts')
+maxGD, maxAD, maxTD = maximumDelay(fpDic)
+print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaximum Delay: {maxTD} min')
+av_GroundDelay = totalGroundDelay/nd_Ground
+av_AirDelay = totalExemptDelay/nd_Air
+av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
+print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
 
 
 # Cancelled flights (Not need for metrics yet)
@@ -339,3 +388,11 @@ computePollution(fpDic)
 computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
 stdev_Ground, stdev_Air = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
 print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%')
+nd_Ground, nd_Air, nd_Total = numberFlightsDelayed(fpDic)
+print(f'Ground Delayed Flights: {nd_Ground} aircrafts\nAir Delayed Flights: {nd_Air} aircrafts\nTotal Delayed Flights: {nd_Total} aircrafts')
+nd_Ground15, nd_Air15, nd_Total15 = numberFlightsDelayedPlus15min(fpDic)
+print(f'Ground Delayed Flights >15 min: {nd_Ground15} aircrafts\nAir Delayed Flights >15 min: {nd_Air15} aircrafts\nTotal Delayed Flights >15 min: {nd_Total15} aircrafts')
+maxGD, maxAD, maxTD = maximumDelay(fpDic)
+print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaximum Delay: {maxTD} min')
+av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
+print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
