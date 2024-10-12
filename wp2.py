@@ -215,17 +215,16 @@ def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
     # Compress
     for slotIndex in range(1, len(slots) - 1):
         key = str(slots[slotIndex] // 60) + ':' + str(slots[slotIndex] % 60)
-        nextKey = str(slots[slotIndex + 1] // 60) + ':' + str(slots[slotIndex + 1] % 60)
         prevKey = str(slots[slotIndex - 1] // 60) + ':' + str(slots[slotIndex - 1] % 60)
         
         if fpDic.get(key) == None:
             continue
-        
-        if fpDic.get(prevKey) == None:
-            if canMoveSlot(nextKey, fpDic.get(key)):
-                fpDic.update({prevKey : fpDic.get(key)})
-                fpDic.update({key : None})
     
+        bestKey = getBestEmptySlot(fpDic, slots, slotIndex, fpDic.get(key))
+        if bestKey != key:
+            fpDic.update({bestKey : fpDic.get(key)})
+            fpDic.update({key : None})
+                
     return fpDic
         
         
@@ -239,12 +238,25 @@ def getNextFPNotCancelled(fpDic, slotIndex, slots, cancelledAirline):
     
 
 def canMoveSlot(objectiveSlot, flightPlan):
-    """Returns True if the flight plan can be moved to the objective slot. The objective slot is the really the next to the objective one."""
-    time = int(objectiveSlot.split(':')[0] * 60) + int(objectiveSlot.split(':')[1])
+    """Returns True if the flight plan can be moved to the objective slot."""
+    time = int(objectiveSlot.split(':')[0]) * 60 + int(objectiveSlot.split(':')[1])
     if flightPlan.get('aHour') * 60 + flightPlan.get('aMin') < time:
         return True
     
-    return False   
+    return False
+
+
+def getBestEmptySlot(fpDic, slots, slotsIndex, flightPlan):
+    """Returns the best empty slot for a flight plan."""
+    for slotIndex in range(slotsIndex + 1):
+        key = str(slots[slotIndex] // 60) + ':' + str(slots[slotIndex] % 60)
+        nextKey = str(slots[slotIndex + 1] // 60) + ':' + str(slots[slotIndex + 1] % 60)
+        if fpDic.get(key) == None:
+            if canMoveSlot(nextKey, flightPlan):
+                return key
+    
+    return key
+            
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 
@@ -261,4 +273,13 @@ printFlightTypes(fpDic)
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
+
+
+# Cancelled flights (Not need for metrics yet)
+print('\n\n\n')
 cancelledFlights(fpDic, cancelledAirline, maxDelay, slots)
+fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeTotalDelays(fpDic)
+print(f'Total exempt delay: {totalExemptDelay} min\nTotal ground delay: {totalGroundDelay} min\nTotal not affected delay: {totalNotAffectedDelay} min')
+fpDic = assignCTAandCTD(fpDic)
+printUnrecGDelay(fpDic, rStart)
+computePollution(fpDic)
