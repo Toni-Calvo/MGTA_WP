@@ -256,6 +256,57 @@ def getBestEmptySlot(fpDic, slots, slotsIndex, flightPlan):
                 return key
     
     return key
+
+def computeRelativeStandardDeviation (fpDic, totalGroundDelay, totalAirDelay):
+    """Returns the relative standard devitation."""
+    
+    number_GroundFlights = getGroundFlights(fpDic)
+    number_AirFlights = getExemptFlights(fpDic)
+
+    mean_GroundDelay = totalGroundDelay/number_GroundFlights
+    mean_AirDelay = totalAirDelay/number_AirFlights
+
+    squareSum_Ground = 0
+    squareSum_Air = 0
+
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('type')=='Regulated':
+                squareSum_Ground += (fpDic.get(key).get('gDelay'))**2
+            if fpDic.get(key).get('type')=='Exempt':
+                squareSum_Air += (fpDic.get(key).get('aDelay'))**2
+
+
+
+    standardDeviation_GroundDelay = ((squareSum_Ground)/(number_GroundFlights-1))**0.5
+    standardDeviation_AirDelay = ((squareSum_Air)/(number_AirFlights-1))**0.5
+    
+    relativeStandardDeviation_GroundDelay = (standardDeviation_GroundDelay/mean_GroundDelay)*100
+    relativeStandardDeviation_AirDelay = (standardDeviation_AirDelay/mean_AirDelay)*100
+
+    return relativeStandardDeviation_GroundDelay, relativeStandardDeviation_AirDelay
+
+
+def getGroundFlights (fpDic):
+    """Returns the total flights in ground."""
+    count = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('type')=='Regulated':
+                count += 1
+    return count
+
+def getExemptFlights (fpDic):
+    """Returns the total flights in air."""
+    count = 0
+    for key in fpDic:
+        if fpDic.get(key) != None:
+            if fpDic.get(key).get('type')=='Exempt':
+                count += 1
+    return count
+
+
+
             
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
@@ -273,6 +324,8 @@ printFlightTypes(fpDic)
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
+stdev_Ground, stdev_Air = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
+print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%')
 
 
 # Cancelled flights (Not need for metrics yet)
@@ -283,3 +336,6 @@ print(f'Total exempt delay: {totalExemptDelay} min\nTotal ground delay: {totalGr
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
+computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
+stdev_Ground, stdev_Air = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
+print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%')
