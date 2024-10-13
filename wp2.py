@@ -267,6 +267,7 @@ def computeRelativeStandardDeviation(fpDic, totalGroundDelay, totalAirDelay):
 
     mean_GroundDelay = totalGroundDelay/number_GroundFlights
     mean_AirDelay = totalAirDelay/number_AirFlights
+    mean_Total = (totalAirDelay+totalGroundDelay)/(number_GroundFlights+number_AirFlights)
 
     squareSum_Ground = 0
     squareSum_Air = 0
@@ -285,8 +286,9 @@ def computeRelativeStandardDeviation(fpDic, totalGroundDelay, totalAirDelay):
     
     relativeStandardDeviation_GroundDelay = (standardDeviation_GroundDelay/mean_GroundDelay)*100
     relativeStandardDeviation_AirDelay = (standardDeviation_AirDelay/mean_AirDelay)*100
+    relativeStandarDeviation_Total = (standardDeviation_Total/mean_Total)*100
 
-    return relativeStandardDeviation_GroundDelay, relativeStandardDeviation_AirDelay, standardDeviation_Total
+    return relativeStandardDeviation_GroundDelay, relativeStandardDeviation_AirDelay, relativeStandarDeviation_Total
 
 
 def getGroundFlights(fpDic):
