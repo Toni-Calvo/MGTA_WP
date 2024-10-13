@@ -274,9 +274,9 @@ def computeRelativeStandardDeviation(fpDic, totalGroundDelay, totalAirDelay):
     for key in fpDic:
         if fpDic.get(key) != None:
             if fpDic.get(key).get('type')=='Regulated':
-                squareSum_Ground += (fpDic.get(key).get('gDelay'))**2
+                squareSum_Ground += (fpDic.get(key).get('gDelay')-mean_GroundDelay)**2
             if fpDic.get(key).get('type')=='Exempt':
-                squareSum_Air += (fpDic.get(key).get('aDelay'))**2
+                squareSum_Air += (fpDic.get(key).get('aDelay')-mean_AirDelay)**2
 
     standardDeviation_Total = ((squareSum_Ground + squareSum_Air)/(number_GroundFlights + number_AirFlights-1))**0.5
 
