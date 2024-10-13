@@ -276,7 +276,7 @@ def computeRelativeStandardDeviation (fpDic, totalGroundDelay, totalAirDelay):
             if fpDic.get(key).get('type')=='Exempt':
                 squareSum_Air += (fpDic.get(key).get('aDelay'))**2
 
-
+    standardDeviation_Total = ((squareSum_Ground+squareSum_Air)/(number_GroundFlights+number_AirFlights-1))**0.5
 
     standardDeviation_GroundDelay = ((squareSum_Ground)/(number_GroundFlights-1))**0.5
     standardDeviation_AirDelay = ((squareSum_Air)/(number_AirFlights-1))**0.5
@@ -284,7 +284,7 @@ def computeRelativeStandardDeviation (fpDic, totalGroundDelay, totalAirDelay):
     relativeStandardDeviation_GroundDelay = (standardDeviation_GroundDelay/mean_GroundDelay)*100
     relativeStandardDeviation_AirDelay = (standardDeviation_AirDelay/mean_AirDelay)*100
 
-    return relativeStandardDeviation_GroundDelay, relativeStandardDeviation_AirDelay
+    return relativeStandardDeviation_GroundDelay, relativeStandardDeviation_AirDelay, standardDeviation_Total
 
 
 def getGroundFlights (fpDic):
@@ -363,8 +363,8 @@ printFlightTypes(fpDic)
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
-stdev_Ground, stdev_Air = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
-print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%')
+stdev_Ground, stdev_Air, stdev_Total = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
+print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%\nRelative Standard Total Deviation: {stdev_Total}%')
 nd_Ground, nd_Air, nd_Total = numberFlightsDelayed(fpDic)
 print(f'Ground Delayed Flights: {nd_Ground} aircrafts\nAir Delayed Flights: {nd_Air} aircrafts\nTotal Delayed Flights: {nd_Total} aircrafts')
 nd_Ground15, nd_Air15, nd_Total15 = numberFlightsDelayedPlus15min(fpDic)
@@ -387,12 +387,14 @@ printUnrecGDelay(fpDic, rStart)
 computePollution(fpDic)
 computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
 stdev_Ground, stdev_Air = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
-print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%')
+print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%\nRelative Standard Total Deviation: {stdev_Total}%')
 nd_Ground, nd_Air, nd_Total = numberFlightsDelayed(fpDic)
 print(f'Ground Delayed Flights: {nd_Ground} aircrafts\nAir Delayed Flights: {nd_Air} aircrafts\nTotal Delayed Flights: {nd_Total} aircrafts')
 nd_Ground15, nd_Air15, nd_Total15 = numberFlightsDelayedPlus15min(fpDic)
 print(f'Ground Delayed Flights >15 min: {nd_Ground15} aircrafts\nAir Delayed Flights >15 min: {nd_Air15} aircrafts\nTotal Delayed Flights >15 min: {nd_Total15} aircrafts')
 maxGD, maxAD, maxTD = maximumDelay(fpDic)
 print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaximum Delay: {maxTD} min')
+av_GroundDelay = totalGroundDelay/nd_Ground
+av_AirDelay = totalExemptDelay/nd_Air
 av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
 print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
