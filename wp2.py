@@ -58,6 +58,7 @@ def separateFlights(flightPlans):
             exemptFlights.append(flightPlan)
         else:
             restFlights.append(flightPlan)
+            
     return exemptFlights, restFlights
 
 
