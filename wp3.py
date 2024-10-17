@@ -18,3 +18,5 @@ def filterFPs(fpDic, Hstart, HnoReg):
     
     return filteredFPs
 
+# --------------------------------------------------------------------------------------------
+# MAIN PROGRAM
