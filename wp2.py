@@ -192,6 +192,7 @@ def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
     print(f'Cancelled flights: {len(cancelled)}')
     
     notAssigned = cancelled.copy()
+    
     # Assign reserved slots
     for slotIndex in range(len(slots) - 1):
         key = str(slots[slotIndex] // 60) + ':' + str(slots[slotIndex] % 60)
