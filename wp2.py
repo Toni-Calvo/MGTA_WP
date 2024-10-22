@@ -217,7 +217,6 @@ def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
     # Compress
     for slotIndex in range(1, len(slots) - 1):
         key = str(slots[slotIndex] // 60) + ':' + str(slots[slotIndex] % 60)
-        prevKey = str(slots[slotIndex - 1] // 60) + ':' + str(slots[slotIndex - 1] % 60)
         
         if fpDic.get(key) == None:
             continue
