@@ -44,10 +44,29 @@ def buildMatrix(fpDic):
             nFlight += 1
             
     c = np.ones((1, nFlight*len(fpDic))) # filas: vuelos, columnas: slots
+    keys = list(fpDic.keys())
+    
+    for i in range(len(c[0])):
+        index = i % len(fpDic)
+        
+        if fpDic.get(keys[index]) == None:
+            c[0][i] = 1e9
+            continue
+        
+        et = fpDic.get(keys[index]).get('aHour') * 60 + fpDic.get(keys[index]).get('aMin')
+        if index == len(keys) - 1:
+            t = int(keys[index].split(':')[0]) * 60 + int(keys[index].split(':')[1]) + PAAR
+        else:
+            t = int(keys[index + 1].split(':')[0]) * 60 + int(keys[index + 1].split(':')[1])
+            
+        if t < et:
+            c[0][i] = 1e9
+        else:
+            c[0][i] = rf * (t - et)**(1 + epsilon)
     
     A = np.zeros((len(fpDic), nFlight*len(fpDic)))
     
-    for i in range(len(A)):
+    for i in range(len(A)): # Cada slot solo tiene un vuelo
         for j in range(len(A[0])):
             if (j - i) % len(fpDic) == 0:
                 A[i][j] = 1
@@ -56,7 +75,7 @@ def buildMatrix(fpDic):
     
     Aeq = np.zeros((nFlight, nFlight*len(fpDic)))
     
-    for i in range(len(Aeq)):
+    for i in range(len(Aeq)):   # Cada vuelo solo tiene un slot
         for j in range(len(Aeq[0])):
             if 0 <= j - i*len(fpDic) < len(fpDic):
                 Aeq[i][j] = 1
@@ -68,15 +87,16 @@ def buildMatrix(fpDic):
     bounds = [(0, 1)] * nFlight*len(fpDic)
     res = sp.optimize.linprog(c, A_ub=A, b_ub=b, A_eq=Aeq, b_eq=beq, bounds=bounds)
     
+    delay = 0
     for index in range(len(res.x)): #! Si que hay unos comprobar con sistema mas sencillo
         if res.x[index] == 1:
             print(index)
+            delay += (c[0][index]/rf)**(1/(1 + epsilon))
         
-    print(res.x)
+    print(delay)
     
             
     
-
 def getFilteredSlots(fpDic):
     """Returns a vector with all the slots."""
     slots = []
