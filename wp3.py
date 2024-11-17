@@ -115,12 +115,12 @@ def cost_file(filepath):
     #filepath += '.txt'
     with open(filepath, 'r') as file:
         for line in file:
-            cAircraft = line.strip().split('\t')
+            cAircraft = line.rstrip().replace(",", "").split('\t' + 'â‚¬')
             # Slopes of each section of the delay
             slope0005 = 1 #Mirar coste fuel
             slope0515 = round(int(cAircraft[1])/5, 2)
-            slope1530 = round(int(cAircraft[2])-(cAircraft[1])/10, 2)
-            slope3060 = round(int(cAircraft[3])-(cAircraft[2])/15, 2)
+            slope1530 = round((int(cAircraft[2])-int(cAircraft[1]))/10, 2)
+            slope3060 = round((int(cAircraft[3])-int(cAircraft[2]))/15, 2)
             cost_dict = {
                 'aircraft_type': cAircraft[0],
                 'cost_gd_0005': slope0005,
@@ -129,11 +129,10 @@ def cost_file(filepath):
                 'cost_gd_3060': slope3060,
                 'cost_ad_0005': 1, #Mirar coste fuel
                 'cost_ad_0515': round(int(cAircraft[7])/5, 2),
-                'cost_ad_1530': round(int(cAircraft[8])-(cAircraft[7])/10, 2),
-                'cost_ad_3060': round(int(cAircraft[9])-(cAircraft[8])/15, 2),
+                'cost_ad_1530': round((int(cAircraft[8])-int(cAircraft[7]))/10, 2),
+                'cost_ad_3060': round((int(cAircraft[9])-int(cAircraft[8]))/15, 2),
             }
             cost_data.append(cost_dict)
-            print(list[0].get('cost_gd_0005'))
 
     return cost_data    
 # --------------------------------------------------------------------------------------------
@@ -143,6 +142,4 @@ arrivals, HnoReg = main()
 fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
 fpDic = filterFPs(fpDic, rStart, HnoReg)
 buildMatrix(fpDic)
-list = cost_file("cost")
-print(list[0].get('cost_gd_0005'))
 print()
