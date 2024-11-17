@@ -109,7 +109,32 @@ def getFilteredSlots(fpDic):
 def setCostFunc(fpDic, rf):
     """Returns the cost of the delay."""
     pass
-    
+
+def cost_file(filepath):
+    cost_data = []  # List to hold all cost data
+    with open(filepath, 'r') as file:
+        for line in file:
+            cAircraft = line.strip().split('\t')
+            # Slopes of each section of the delay
+            slope0005 = 1 #Mirar coste fuel
+            slope0515 = int(cAircraft[1]/5)
+            slope1530 = int(cAircraft[2]-cAircraft[1]/10)
+            slope3060 = int(cAircraft[3]-cAircraft[2]/15)
+            cost_dict = {
+                'aircraft_type': cAircraft[0],
+                'cost_gd_0005': slope0005,
+                'cost_gd_0515': slope0515,
+                'cost_gd_1530': slope1530,
+                'cost_gd_3060': slope3060,
+                'cost_ad_0005': 1, #Mirar coste fuel
+                'cost_ad_0515': int(cAircraft[7]/5),
+                'cost_ad_1530': int(cAircraft[8]-cAircraft[7]/10),
+                'cost_ad_3060': int(cAircraft[9]-cAircraft[8]/15),
+            }
+            cost_data.append(cost_dict)
+            print(list[0].get('cost_gd_0005'))
+
+    return cost_data    
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 
@@ -117,4 +142,6 @@ arrivals, HnoReg = main()
 fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
 fpDic = filterFPs(fpDic, rStart, HnoReg)
 buildMatrix(fpDic)
+list = cost_file("cost")
+print(list[0].get('cost_gd_0005'))
 print()
