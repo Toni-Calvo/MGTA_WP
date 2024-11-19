@@ -11,6 +11,9 @@ rStart = 8
 rEnd = 13
 rf = 1 # €/min
 epsilon = 0
+fuel_cost = 89.21 #$/bbl price of one barrel of oil at 15th of November
+fuel_cost = fuel_cost*0.948/(3.78541*42)
+
 
 # --------------------------------------------------------------------------------------------
 # FUNCTIONS
@@ -142,4 +145,5 @@ arrivals, HnoReg = main()
 fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
 fpDic = filterFPs(fpDic, rStart, HnoReg)
 buildMatrix(fpDic)
+cost = cost_file("cost.ALL_FT+")
 print()
