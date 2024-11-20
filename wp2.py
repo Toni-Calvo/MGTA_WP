@@ -18,13 +18,13 @@ groundConsumption = {'A321' : 600, 'A320' : 600, 'B737' : 600, 'B738' : 600, 'C5
                      'A319' : 600, 'E145' : 400, 'E190' : 400, 'LJ60' : 200, 'B77W' : 1000, 'B350' : 200, 'B764' : 800, 'CRJX' : 400,
                      'CRJ2' : 400, 'B734' : 400, 'F100' : 400, 'B763' : 800, 'B752' : 800, 'A332' : 1000, 'A343' : 1000, 'F900' : 400,
                      'B739' : 600, 'AT75' : 400, 'F2TH' : 400, 'A333' : 1000, 'A388' : 1350, 'B77L' : 1000, 'GLF5' : 400, 'E120' : 200,
-                     'H25B' : 200, 'BE10' : 200}
+                     'H25B' : 200, 'BE10' : 200, 'AT43' : 300, 'AT72' : 400, 'B735' : 900, 'B744' : 4500, 'DH8D' : 300}    # kg/h
 
 airConsumption = {'A321' : 3500, 'A320' : 3500, 'B737' : 3500, 'B738' : 3500, 'C510' : 1000, 'PC12' : 1000, 'C25A' : 1000, 'B733' : 2000,
                   'A319' : 3500, 'E145' : 2000, 'E190' : 2000, 'LJ60' : 1000, 'B77W' : 7000, 'B350' : 1000, 'B764' : 5000, 'CRJX' : 2000,
                   'CRJ2' : 2000, 'B734' : 2000, 'F100' : 2000, 'B763' : 5000, 'B752' : 5000, 'A332' : 7000, 'A343' : 7000, 'F900' : 2000,
                   'B739' : 3500, 'AT75' : 2000, 'F2TH' : 2000, 'A333' : 7000, 'A388' : 11000, 'B77L' : 7000, 'GLF5' : 2000, 'E120' : 1000,
-                  'H25B' : 1000, 'BE10' : 1000}
+                  'H25B' : 1000, 'BE10' : 1000, 'AT43' : 1000, 'AT72' : 1000, 'B735' : 3000, 'B744' : 10000, 'DH8D' : 1000}
 
 # --------------------------------------------------------------------------------------------
 # FUNCTIONS
@@ -47,6 +47,19 @@ def defineType(flightPlans, rStart, rEnd, margin, radius, Hfile, HnoReg):
                 flightPlan.update({'type' : 'Regulated'})
         
     return flightPlans
+
+
+
+def getGroundConsumption(aircraftType):
+    """Returns the ground consumption of the aircraft type."""
+    return groundConsumption.get(aircraftType)
+
+
+
+def getAirConsumption(aircraftType):
+    """Returns the air consumption of the aircraft type."""
+    return airConsumption.get(aircraftType)
+
 
 
 def separateFlights(flightPlans):
