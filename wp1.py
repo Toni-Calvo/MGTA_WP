@@ -76,8 +76,11 @@ def isInECAC(flightPlan):
     return False
 
 
-def getCategory(flightPlan):
+def getCategory(flightPlan=None, aircraft=None):
     """Returns the aircraft's cathegory of the flight plan."""
+    if aircraft is not None:
+        return category.get(aircraft)
+    
     aircraft = flightPlan.get('aircraft_type')
     return category.get(aircraft)
 
@@ -303,7 +306,7 @@ category = {'A321' : 'D', 'A320' : 'D', 'B737' : 'D', 'B738' : 'D', 'C510' : 'F'
             'A319' : 'D', 'E145' : 'E', 'E190' : 'E', 'LJ60' : 'F', 'B77W' : 'B', 'B350' : 'F', 'B764' : 'C', 'CRJX' : 'E',
             'CRJ2' : 'E', 'B734' : 'E', 'F100' : 'E', 'B763' : 'C', 'B752' : 'C', 'A332' : 'B', 'A343' : 'B', 'F900' : 'E',
             'B739' : 'D', 'AT75' : 'E', 'F2TH' : 'E', 'A333' : 'B', 'A388' : 'A', 'B77L' : 'B', 'GLF5' : 'E', 'E120' : 'F',
-            'H25B' : 'F', 'BE10' : 'F'}
+            'H25B' : 'F', 'BE10' : 'F', 'AT43' : 'F', 'AT72' : 'F', 'B735' : 'E', 'B744' : 'B', 'DH8D' : 'E'}
 
 seats = {'A321' : 220, 'A320' : 180, 'B737' : 189, 'B738' : 181, 'C510' : 4, 'PC12' : 8, 'C25A' : 7, 'B733' : 149,
          'A319' : 144, 'E145' : 50, 'E190' : 100, 'LJ60' : 8, 'B77W' : 212, 'B350' : 12, 'B764' : 156, 'CRJX' : 100,
