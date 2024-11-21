@@ -1,11 +1,13 @@
 import scipy as sp
 import numpy as np
 from wp1 import main, isInECAC, getDistance, getSlots, plotSlotsArrOverTime, assignSlots, getCategory
-from wp2 import getAirConsumption, getGroundConsumption
+from wp2 import getAirConsumption, getGroundConsumption, defineType
 
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
 Hfile = 6
+margin = 30 # min DO NOT CHANGE
+radius = 1500 # km
 AAR = 38
 PAAR = 12
 rStart = 8
@@ -43,30 +45,40 @@ def filterFPs(fpDic, Hstart, HnoReg):
 def buildMatrix(fpDic):
     """Builds the slot/flights matrix."""
     nFlight = 0
+    newfpDic = {}
+    maxDelayGround = 0
+    maxDelayAir = 0
     for key in fpDic:
         if fpDic.get(key) != None:
             nFlight += 1
             
     c = np.ones((1, nFlight*len(fpDic))) # filas: vuelos, columnas: slots
+    delayMatrix = np.zeros((1, nFlight*len(fpDic)))
     keys = list(fpDic.keys())
     
     for i in range(len(c[0])):
-        index = i % len(fpDic)
+        indexSlot = i % len(fpDic)
+        indexFP = i // len(fpDic)
+        if indexFP >= 1:
+            indexFP += 1
         
-        if fpDic.get(keys[index]) == None:
-            c[0][i] = 1e9
+        if fpDic.get(keys[indexFP]) == None:
+            c[0][i] = 1e12
+            delayMatrix[0][i] = 1e12
             continue
         
-        et = fpDic.get(keys[index]).get('aHour') * 60 + fpDic.get(keys[index]).get('aMin')
-        if index == len(keys) - 1:
-            t = int(keys[index].split(':')[0]) * 60 + int(keys[index].split(':')[1]) + PAAR
+        et = fpDic.get(keys[indexFP]).get('aHour') * 60 + fpDic.get(keys[indexFP]).get('aMin')
+        if indexSlot == len(keys) - 1:
+            t = int(keys[indexSlot].split(':')[0]) * 60 + int(keys[indexSlot].split(':')[1]) + AAR
         else:
-            t = int(keys[index + 1].split(':')[0]) * 60 + int(keys[index + 1].split(':')[1])
+            t = int(keys[indexSlot + 1].split(':')[0]) * 60 + int(keys[indexSlot + 1].split(':')[1])
             
         if t < et:
-            c[0][i] = 1e9
+            c[0][i] = 1e12
+            delayMatrix[0][i] = 1e12
         else:
-            c[0][i] = getRF(fpDic.get(keys[index]).get('aircraft_type'),t - et) * (t - et)**(1 + epsilon)
+            c[0][i] = getRF(fpDic.get(keys[indexFP]),t - et) * (t - et)**(1 + epsilon)
+            delayMatrix[0][i] = t - et
             """if t - et <= 5:
                 c[0][i] = rf * (t - et)**(1 + epsilon)
             elif t - et <= 15:
@@ -76,6 +88,10 @@ def buildMatrix(fpDic):
             else:
                 c[0][i] = (5 * rf + 10 * rf + 15 * rf + rf * (t - et - 30))**(1 + epsilon)"""
     
+    with open('matrix.txt', 'w') as file:
+        for i in range(len(c[0])):
+            file.write(f'{i}: ' + str(c[0][i]) + '\n')
+            
     A = np.zeros((len(fpDic), nFlight*len(fpDic)))
     
     for i in range(len(A)): # Cada slot solo tiene un vuelo
@@ -99,27 +115,53 @@ def buildMatrix(fpDic):
     bounds = [(0, 1)] * nFlight*len(fpDic)
     res = sp.optimize.linprog(c, A_ub=A, b_ub=b, A_eq=Aeq, b_eq=beq, bounds=bounds)
     
-    delay = 0
-    for index in range(len(res.x)): #! Si que hay unos comprobar con sistema mas sencillo
+    cost = 0
+    #cont = 0
+    for index in range(len(res.x)):
         if res.x[index] == 1:
-            print(index)
-            delay += (c[0][index]/rf)**(1/(1 + epsilon))
+            #print(index)
+            newfpDic.update({keys[index % len(fpDic)] : fpDic.get(keys[index % len(fpDic)])})
+            #cont += 1
+            if fpDic.get(keys[index % len(fpDic)]).get('type') == 'Regulated':
+                maxDelayGround = max(maxDelayGround, delayMatrix[0][index])
+            else:
+                maxDelayAir = max(maxDelayAir, delayMatrix[0][index])
+                if maxDelayAir == delayMatrix[0][index]:
+                    indice = index
+                
+            cost += c[0][index]
         
-    print(delay)
+    print(f'Cost: {round(cost, 2)} €')
+    print(f'Max delay ground: {maxDelayGround}')
+    print(f'Max delay air: {maxDelayAir}')
+    print(f'Flight with max delay air: {keys[indice % len(fpDic)]}')
+    print("sadsa")
     
     
-def getRF(aircraft, delay):
+def getRF(flightPlan, delay):
     """Returns the cost of the delay."""
+    aircraft = flightPlan.get('aircraft_type')
     if cost.get(aircraft) is None:
-        aircraft = getCategory(aircraft=aircraft)
-    if delay <= 5:
-        return cost[aircraft].get('cost_gd_0005')
-    elif delay <= 15:
-        return cost[aircraft].get('cost_gd_0515')
-    elif delay <= 30:
-        return cost[aircraft].get('cost_gd_1530')
-    else:
-        return cost[aircraft].get('cost_gd_3060')
+        aircraft = getCategory(aircraft=aircraft)   # We don't have the costs of the specific flight so we take the avg of its category
+        
+    if flightPlan.get('type') == 'Regulated':   # Ground Delay
+        if delay <= 5:
+            return cost[aircraft].get('cost_gd_0005')
+        elif delay <= 15:
+            return cost[aircraft].get('cost_gd_0515')
+        elif delay <= 30:
+            return cost[aircraft].get('cost_gd_1530')
+        else:
+            return cost[aircraft].get('cost_gd_3060')
+    else:   # Air Delay
+        if delay <= 5:
+            return cost[aircraft].get('cost_ad_0005')
+        elif delay <= 15:
+            return cost[aircraft].get('cost_ad_0515')
+        elif delay <= 30:
+            return cost[aircraft].get('cost_ad_1530')
+        else:
+            return cost[aircraft].get('cost_ad_3060')
     
     
 def getFilteredSlots(fpDic):
@@ -237,6 +279,7 @@ def computeAvrgForCategory(cost):
 # MAIN PROGRAM
 
 arrivals, HnoReg = main()
+arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
 fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
 fpDic = filterFPs(fpDic, rStart, HnoReg)
 cost = cost_file("cost.ALL_FT+")
