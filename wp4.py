@@ -51,12 +51,22 @@ ordered_D2D_Airplane = [D2D_Airplane[city] for city in ordered_cities]
 ordered_CO2_Train = [CO2_Train[city] for city in ordered_cities]
 ordered_CO2_Airplane = [CO2_Airplane[city] for city in ordered_cities]
 
+#Adapt the units of DTD and CO2 emissions
+i = 0
+while i < len(ordered_D2D_Train):
+    ordered_D2D_Train[i] = ((ordered_D2D_Train[i]//1)*60 + (ordered_D2D_Train[i] %1 )*60)/ordered_distances[i]
+    i += 1
+i = 0
+while i < len(ordered_D2D_Airplane):
+    ordered_D2D_Airplane[i] = ((ordered_D2D_Airplane[i]//1)*60 + (ordered_D2D_Airplane[i] %1 )*60)/ordered_distances[i]
+    i += 1
+
 # Plot
 fig, ax1 = plt.subplots(figsize=(12, 7))
 
 # Door-To-Door Times
 ax1.set_xlabel("Distance to Barcelona (km)")
-ax1.set_ylabel("D2D Time (minutes)", color="tab:blue")
+ax1.set_ylabel("D2D Time (sec/km)", color="tab:blue")
 ax1.plot(ordered_distances, ordered_D2D_Train, label="Train D2D Time", color="tab:blue", marker='o')
 ax1.plot(ordered_distances, ordered_D2D_Airplane, label="Airplane D2D Time", color="tab:cyan", marker='o')
 ax1.tick_params(axis='y', labelcolor="tab:blue")
