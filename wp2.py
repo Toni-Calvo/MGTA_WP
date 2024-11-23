@@ -1,4 +1,5 @@
 from wp1 import main, isInECAC, getDistance, getSlots, plotSlotsArrOverTime
+import matplotlib.pyplot as plt
 
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
@@ -39,7 +40,7 @@ def defineType(flightPlans, rStart, rEnd, margin, radius, Hfile, HnoReg):
         if arrival < rStart or arrival >= HnoReg[0]*60 + HnoReg[1]:
             flightPlan.update({'type' : 'Not affected'})
         else:
-            if departure < Hfile + margin:
+            if departure < Hfile * 60 + margin:
                 flightPlan.update({'type' : 'Exempt'})
             elif not isInECAC(flightPlan) or getDistance(flightPlan) > radius:
                 flightPlan.update({'type' : 'Exempt'})
@@ -175,6 +176,7 @@ def printUnrecGDelay(fpDic, rStart):
                     delay += abs(fpDic.get(key).get('dHour') * 60 + fpDic.get(key).get('dMin') - rStart * 60)
     
     print(f'Unrecoverable ground delay applied before {rStart}:00: {delay} min')
+    return delay
 
 
 def computePollution(fpDic):
@@ -189,6 +191,7 @@ def computePollution(fpDic):
                 totalPollutionGround += groundConsumption.get(fpDic.get(key).get('aircraft_type')) * (fpDic.get(key).get('gDelay') / 60) * CO2Factor
     
     print(f'Total kg of CO2 of air delay: {totalPollutionAir}\nTotal kg of CO2 of ground delay: {totalPollutionGround}')
+    return totalPollutionAir, totalPollutionGround
 
 
 def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
@@ -422,3 +425,104 @@ av_GroundDelay = totalGroundDelay/nd_Ground
 av_AirDelay = totalExemptDelay/nd_Air
 av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
 print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
+
+#--------------------------------------------------------------------------------------------
+extra = True    # Set to False to execute wp3
+if extra:
+    airDelays = []
+    groundDelays = []
+    unrecDelays = []
+    airCO2 = []
+    groundCO2 = []
+    
+    # Varying Radius
+    for radius in [500, 1000, 1500, 2000, 2500]:
+        arrivals, HnoReg = main()
+        arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+        exempt, rest = separateFlights(arrivals)
+        fpDic = assignSlots(exempt, rest, slots)
+        fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeTotalDelays(fpDic)
+        airDelays.append(totalExemptDelay)
+        groundDelays.append(totalGroundDelay)
+        fpDic = assignCTAandCTD(fpDic)
+        unrecDelays.append(printUnrecGDelay(fpDic, rStart))
+        airPollution, groundPollution = computePollution(fpDic)
+        airCO2.append(airPollution)
+        groundCO2.append(groundPollution)
+    
+    plt.plot([500, 1000, 1500, 2000, 2500], airDelays)
+    plt.title('Radius VS Total Air Delay')
+    plt.xlabel('Radius (km)')
+    plt.ylabel('Air Delay (min)')
+    plt.show()
+    plt.plot([500, 1000, 1500, 2000, 2500], groundDelays)
+    plt.title('Radius VS Total Ground Delay')
+    plt.xlabel('Radius (km)')
+    plt.ylabel('Ground Delay (min)')
+    plt.show()
+    plt.plot([500, 1000, 1500, 2000, 2500], unrecDelays)
+    plt.title('Radius VS Unrecoverable Delay')
+    plt.xlabel('Radius (km)')
+    plt.ylabel('Unrecoverable Delay (min)')
+    plt.show()
+    plt.plot([500, 1000, 1500, 2000, 2500], airCO2)
+    plt.title('Radius VS Pollution Due to Air Delay')
+    plt.xlabel('Radius (km)')
+    plt.ylabel('CO2 Emissions Due to Air Delay (kg)')
+    plt.show()
+    plt.plot([500, 1000, 1500, 2000, 2500], groundCO2)
+    plt.title('Radius VS Pollution Due to Ground Delay')
+    plt.xlabel('Radius (km)')
+    plt.ylabel('CO2 Emissions Due to Ground Delay (kg)')
+    plt.show()
+    
+    
+    airDelays = []
+    groundDelays = []
+    unrecDelays = []
+    airCO2 = []
+    groundCO2 = []
+    radius = 1500
+    
+    # Varying Hfile
+    for Hfile in [4, 5, 6, 7]:
+        arrivals, HnoReg = main()
+        arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+        exempt, rest = separateFlights(arrivals)
+        fpDic = assignSlots(exempt, rest, slots)
+        fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeTotalDelays(fpDic)
+        airDelays.append(totalExemptDelay)
+        groundDelays.append(totalGroundDelay)
+        fpDic = assignCTAandCTD(fpDic)
+        unrecDelays.append(printUnrecGDelay(fpDic, rStart))
+        airPollution, groundPollution = computePollution(fpDic)
+        airCO2.append(airPollution)
+        groundCO2.append(groundPollution)
+        
+    
+    plt.plot([4, 5, 6, 7], airDelays, label = 'Air Delays')
+    plt.title('Hfile VS Total Air Delay')
+    plt.xlabel('Hfile (h)')
+    plt.ylabel('Air Delay (min)')
+    plt.show()
+    plt.plot([4, 5, 6, 7], groundDelays, label = 'Ground Delays')
+    plt.title('Hfile VS Total Ground Delay')
+    plt.xlabel('Hfile (h)')
+    plt.ylabel('Ground Delay (min)')
+    plt.show()
+    plt.plot([4, 5, 6, 7], unrecDelays, label = 'Unrecoverable Delays')
+    plt.title('Hfile VS Unrecoverable Delay')
+    plt.xlabel('Hfile (h)')
+    plt.ylabel('Unrecoverable Delay (min)')
+    plt.show()
+    plt.plot([4, 5, 6, 7], airCO2, label = 'Air CO2')
+    plt.title('Hfile VS Pollution Due to Air Delay')
+    plt.xlabel('Hfile (h)')
+    plt.ylabel('CO2 Emissions Due to Air Delay (kg)')
+    plt.show()
+    plt.plot([4, 5, 6, 7], groundCO2, label = 'Ground CO2')
+    plt.title('Hfile VS Pollution Due to Ground Delay')
+    plt.xlabel('Hfile (h)')
+    plt.ylabel('CO2 Emissions Due to Ground Delay (kg)')
+    plt.show()
+    
