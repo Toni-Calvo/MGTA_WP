@@ -54,11 +54,11 @@ ordered_CO2_Airplane = [CO2_Airplane[city] for city in ordered_cities]
 #Adapt the units of DTD to seconds/Km
 i = 0
 while i < len(ordered_D2D_Train):
-    ordered_D2D_Train[i] = ordered_D2D_Train * 60 / ordered_distances[i]
+    ordered_D2D_Train[i] = ordered_D2D_Train[i] * 60 / ordered_distances[i]
     i += 1
 i = 0
 while i < len(ordered_D2D_Airplane):
-    ordered_D2D_Airplane[i] = ordered_D2D_Airplane * 60 / ordered_distances[i]
+    ordered_D2D_Airplane[i] = ordered_D2D_Airplane[i] * 60 / ordered_distances[i]
     i += 1
 
 #Adapt the units of CO2 emissions to g/ASK
