@@ -96,12 +96,14 @@ def buildMatrix(fpDic):
     
     maxAirDelay = 0
     maxGroundDelay = 0
-    
+    maxDelaySlot = 0
     for slot in slots:
         if newfpDic_temp.get(slot) is not None:
             slotTime = int(slot.split(':')[0]) * 60 + int(slot.split(':')[1])
             newfpDic.update({slot : newfpDic_temp.get(slot)})
             if newfpDic.get(slot).get('type') == 'Regulated':
+                if maxGroundDelay < slotTime - (newfpDic.get(slot).get('aHour') * 60 + newfpDic.get(slot).get('aMin')):
+                    maxDelaySlot = slot
                 maxGroundDelay = max(maxGroundDelay, slotTime - (newfpDic.get(slot).get('aHour') * 60 + newfpDic.get(slot).get('aMin')))
             else:
                 maxAirDelay = max(maxAirDelay, slotTime - (newfpDic.get(slot).get('aHour') * 60 + newfpDic.get(slot).get('aMin')))
@@ -111,6 +113,7 @@ def buildMatrix(fpDic):
     print(f'Total cost: {round(res.fun, 2)} €')
     print(f'Max Air Delay: {maxAirDelay} min')
     print(f'Max Ground Delay: {maxGroundDelay} min')
+    print(f'Max Delay Slot: {maxDelaySlot}')
     return newfpDic
     
 
@@ -149,6 +152,10 @@ def getCost(flightPlan, slot, nextSlot):
     flightTime = flightPlan.get('aHour') * 60 + flightPlan.get('aMin')
     delay = slotTime - flightTime
     
+    if flightPlan.get('type') == 'Exempt' and delay >= 20:
+        return 1e12
+    if delay >= 210:
+        return 1e12
     if nextSlotTime - flightTime < 0:
         return 1e12
     elif delay <= 0:
