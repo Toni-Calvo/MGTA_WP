@@ -49,11 +49,11 @@ timeByTrain = {
 }"""""
 
 timeByPlane = { 
-    "LEZG": 82, "LESO": 381, 
-    "LEVC": 172, "LEAL": 323,
-    "LEGR": 386, "LEMG": 381, 
-    "LEZL": 347, "LEMD": 149,
-    "LFML": 289, "LFLL": 301
+    "LEZG": 37, "LESO": 49, 
+    "LEVC": 47, "LEAL": 49,
+    "LEGR": 64, "LEMG": 67, 
+    "LEZL": 347, "LEMD": 51,
+    "LFML": 40, "LFLL": 61
 } #min
 
 
