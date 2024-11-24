@@ -134,7 +134,7 @@ ax1.legend(loc="upper left")
 
 # CO2 Emissions
 ax2 = ax1.twinx()
-ax2.set_ylabel("CO2 Emissions (kg CO₂/pax)", color="tab:red")
+ax2.set_ylabel("CO2 Emissions (g CO₂/ASK)", color="tab:red")
 ax2.plot(ordered_distances, ordered_CO2_Train, label="Train CO2", color="tab:red", marker='x')
 ax2.plot(ordered_distances, ordered_CO2_Airplane, label="Airplane CO2", color="tab:orange", marker='x')
 ax2.tick_params(axis='y', labelcolor="tab:red")
