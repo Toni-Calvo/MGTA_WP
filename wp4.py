@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-from wp1 import main, getSlots, assignSlots, getAvaliableSeats
+from wp1 import getAvaliableSeats
 from wp2 import getWP2Results
-from wp3 import filterFPs
+from wp3 import getWP3Results
 
 # Redefine all data
 """"distances = {
@@ -223,4 +223,79 @@ plt.tight_layout()
 # Show plot
 plt.show()
 # --------------------------------------------------------------------------------------------
+fpDic = getWP3Results()
 
+todo = ["LEZG", "LESO", "LEVC", "LEAL","LEGR", "LEMG", "LEZL", "LEMD","LFML", "LFLL"]
+airplaneDelay = {}
+airplaneCO2 = {}
+for aiport in todo:
+    airplaneDelay[aiport] = [0, 0]
+    airplaneCO2[aiport] = [0, 0]
+
+for key in fpDic:
+    if fpDic.get(key) is None:
+        continue
+    
+    if fpDic.get(key).get('departure_airport') in todo:
+        airplaneDelay[fpDic.get(key).get('departure_airport')][0] += 1
+        airplaneDelay[fpDic.get(key).get('departure_airport')][1] += fpDic.get(key).get('gDelay') + fpDic.get(key).get('aDelay')
+        airplaneCO2[fpDic.get(key).get('departure_airport')][0] += 1
+        airplaneCO2[fpDic.get(key).get('departure_airport')][1] += fpDic.get(key).get('CO2') / getAvaliableSeats(fpDic.get(key))
+
+for key in airplaneDelay:
+    if airplaneDelay[key][0] == 0:
+        airplaneDelay[key] = 0
+        airplaneCO2[key] = 0
+    else:
+        airplaneDelay[key] = airplaneDelay[key][1] / airplaneDelay[key][0]
+        airplaneCO2[key] = airplaneCO2[key][1] / airplaneCO2[key][0]
+
+newD2D_Airplane = {}
+newCO2_Airplane = {}
+
+for key in D2D_Airplane:
+    newD2D_Airplane[key] = D2D_Airplane[key] + airplaneDelay[key]
+    newCO2_Airplane[key] = CO2_Airplane[key] + airplaneCO2[key]
+
+# Sort cities by distance
+ordered_newD2D_Airplane = [newD2D_Airplane[city] for city in ordered_cities]
+ordered_newCO2_Airplane = [newCO2_Airplane[city] for city in ordered_cities]
+
+# Adapt the units of new DTD to seconds/Km
+i = 0
+while i < len(ordered_newD2D_Airplane):
+    ordered_newD2D_Airplane[i] = ordered_newD2D_Airplane[i] * 60 / ordered_distances[i]
+    i += 1
+
+# Adapt the units of new CO2 emissions to g/ASK
+i = 0
+while i < len(ordered_newCO2_Airplane):
+    ordered_newCO2_Airplane[i] = (ordered_newCO2_Airplane[i] * 1000) / ordered_distances[i]
+    i += 1
+
+# Plot updated data
+fig, ax1 = plt.subplots(figsize=(12, 7))
+
+# Door-To-Door Times
+ax1.set_xlabel("Distance to Barcelona (km)")
+ax1.set_ylabel("D2D Time (sec/km)", color="tab:blue")
+ax1.plot(ordered_distances, ordered_D2D_Train, label="Train D2D Time", color="tab:blue", marker='o')
+ax1.plot(ordered_distances, ordered_newD2D_Airplane, label="WP3 Airplane D2D Time", color="tab:green", marker='o')
+ax1.tick_params(axis='y', labelcolor="tab:blue")
+ax1.legend(loc="upper left")
+
+# CO2 Emissions
+ax2 = ax1.twinx()
+ax2.set_ylabel("CO2 Emissions (g CO₂/ASK)", color="tab:red")
+ax2.plot(ordered_distances, ordered_CO2_Train, label="Train CO2", color="tab:red", marker='x')
+ax2.plot(ordered_distances, ordered_newCO2_Airplane, label="WP3 Airplane CO2", color="tab:purple", marker='x')
+ax2.tick_params(axis='y', labelcolor="tab:red")
+ax2.legend(loc="upper right")
+
+# Title and layout
+plt.title("Updated Comparison of D2D Times and CO2 Emissions by Distance to Barcelona")
+plt.grid()
+plt.tight_layout()
+
+# Show plot
+plt.show()
