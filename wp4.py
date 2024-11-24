@@ -2,11 +2,19 @@ import matplotlib.pyplot as plt
 from wp1 import main, getSlots, assignSlots
 from wp3 import filterFPs
 
-# Redefine all dataç
-distances = {
+# Redefine all data
+""""distances = {
     "LEGE": 75, "LERS": 88, "LEDA": 142, "LEZG": 254, "LEPP": 352, "LESO": 401, 
     "LEVC": 303, "LEAL": 432, "LEVT": 451, "LEAB": 531, "LEGR": 681, "LEMG": 769, 
     "LEBA": 709, "LEZL": 828, "LEMD": 506, "LFMP": 157, "LFMT": 284, 
+    "LFML": 506, "LFLL": 532
+}"""
+
+distances = {
+    "LEZG": 254, "LESO": 401, 
+    "LEVC": 303, "LEAL": 432, 
+    "LEGR": 681, "LEMG": 769, 
+    "LEZL": 828, "LEMD": 506, 
     "LFML": 506, "LFLL": 532
 } #Km
 
@@ -18,19 +26,35 @@ meanTimeToExitAirport = 38
 meanTimeFromAirport_BCN = 35
 meanTimeFromTrainStation_BCN = 20
 
-timeByTrain = {
+""""timeByTrain = {
     "LEGE": 38, "LERS": 88, "LEDA": 58, "LEZG": 82, "LEPP": 234, "LESO": 381, 
     "LEVC": 172, "LEAL": 323, "LEVT": 296, "LEAB": 359, "LEGR": 386, "LEMG": 381, 
     "LEBA": 291, "LEZL": 347, "LEMD": 149, "LFMP": 81, "LFMT": 185, 
+    "LFML": 289, "LFLL": 301
+}"""
+
+timeByTrain = {
+    "LEZG": 82, "LESO": 381, 
+    "LEVC": 172, "LEAL": 323,
+    "LEGR": 386, "LEMG": 381, 
+    "LEZL": 347, "LEMD": 149,
     "LFML": 289, "LFLL": 301
 } #min
 
-timeByPlane = { 
+""""timeByPlane = { 
     "LEGE": 38, "LERS": 88, "LEDA": 58, "LEZG": 82, "LEPP": 234, "LESO": 381, 
     "LEVC": 172, "LEAL": 323, "LEVT": 296, "LEAB": 359, "LEGR": 386, "LEMG": 381, 
     "LEBA": 291, "LEZL": 347, "LEMD": 149, "LFMP": 81, "LFMT": 185, 
     "LFML": 289, "LFLL": 301
-}
+}"""""
+
+timeByPlane = { 
+    "LEZG": 82, "LESO": 381, 
+    "LEVC": 172, "LEAL": 323,
+    "LEGR": 386, "LEMG": 381, 
+    "LEZL": 347, "LEMD": 149,
+    "LFML": 289, "LFLL": 301
+} #min
 
 
 D2D_Train = {key: timeByTrain[key] + meanTimeToTrainStation + meanTimeSecurityCheckpoints_TrainStation + meanTimeFromTrainStation_BCN 
@@ -39,17 +63,33 @@ D2D_Train = {key: timeByTrain[key] + meanTimeToTrainStation + meanTimeSecurityCh
 D2D_Airplane = {key: timeByPlane[key] + meanTimeToAirport + meanTimeFacturationAndSecurityCheckpoints_Airport + meanTimeToExitAirport + meanTimeFromAirport_BCN
                 for key in timeByTrain}
 
-CO2_Train = {
+""""CO2_Train = {
     "LEGE": 2, "LERS": 3, "LEDA": 5, "LEZG": 9, "LEPP": 15, "LESO": 18, 
     "LEVC": 7, "LEAL": 13, "LEVT": 17, "LEAB": 10, "LEGR": 22, "LEMG": 25, 
     "LEBA": 20, "LEZL": 28, "LEMD": 14, "LFMP": 10, "LFMT": 13, 
     "LFML": 20, "LFLL": 30
+}"""
+
+CO2_Train = {
+    "LEZG": 9,"LESO": 18, 
+    "LEVC": 7, "LEAL": 13,
+    "LEGR": 22, "LEMG": 25, 
+    "LEZL": 28, "LEMD": 14,
+    "LFML": 20, "LFLL": 30
 } #Kg/pax
 
-CO2_Airplane = {
+""""CO2_Airplane = {
     "LEGE": 20, "LERS": 20, "LEDA": 35, "LEZG": 70, "LEPP": 80, "LESO": 100, 
     "LEVC": 50, "LEAL": 90, "LEVT": 95, "LEAB": 50, "LEGR": 110, "LEMG": 130, 
     "LEBA": 100, "LEZL": 140, "LEMD": 85, "LFMP": 50, "LFMT": 90, 
+    "LFML": 100, "LFLL": 150
+}"""
+
+CO2_Airplane = {
+    "LEZG": 70, "LESO": 100, 
+    "LEVC": 50, "LEAL": 90,
+    "LEGR": 110, "LEMG": 130, 
+    "LEZL": 140, "LEMD": 85,
     "LFML": 100, "LFLL": 150
 } #Kg/pax
 
