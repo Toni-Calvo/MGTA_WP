@@ -187,11 +187,15 @@ def computePollution(fpDic):
         if fpDic.get(key) != None:
             if fpDic.get(key).get('type') == 'Exempt' and fpDic.get(key).get('aDelay') != 0:
                 totalPollutionAir += airConsumption.get(fpDic.get(key).get('aircraft_type')) * (fpDic.get(key).get('aDelay') / 60) * CO2Factor
+                fpDic.get(key).update({'CO2' : airConsumption.get(fpDic.get(key).get('aircraft_type')) * (fpDic.get(key).get('aDelay') / 60) * CO2Factor})
             if fpDic.get(key).get('type') == 'Regulated' and fpDic.get(key).get('gDelay') != 0:
                 totalPollutionGround += groundConsumption.get(fpDic.get(key).get('aircraft_type')) * (fpDic.get(key).get('gDelay') / 60) * CO2Factor
+                fpDic.get(key).update({'CO2' : groundConsumption.get(fpDic.get(key).get('aircraft_type')) * (fpDic.get(key).get('gDelay') / 60) * CO2Factor})
+            else:
+                fpDic.get(key).update({'CO2' : 0})
     
     print(f'Total kg of CO2 of air delay: {totalPollutionAir}\nTotal kg of CO2 of ground delay: {totalPollutionGround}')
-    return totalPollutionAir, totalPollutionGround
+    return totalPollutionAir, totalPollutionGround, fpDic
 
 
 def cancelledFlights(fpDic, cancelledAirline, maxDelay, slots):
@@ -374,7 +378,21 @@ def maximumDelay(fpDic):
     else:
         maxDelayTotal = maxDelayGround
         
-    return maxDelayGround, maxDelayAir, maxDelayTotal      
+    return maxDelayGround, maxDelayAir, maxDelayTotal
+
+
+
+def getWP2Results():
+    arrivals, HnoReg = main()
+    slots = getSlots(AAR, PAAR, rStart, rEnd)
+    arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+    exempt, rest = separateFlights(arrivals)
+    fpDic = assignSlots(exempt, rest, slots)
+
+    fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeTotalDelays(fpDic)
+    fpDic = assignCTAandCTD(fpDic)
+    airPollution, groundPollution, fpDic = computePollution(fpDic)
+    return fpDic
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
 
@@ -390,7 +408,7 @@ plotSlotsArrOverTime(fpDic, True)
 printFlightTypes(fpDic)
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
-computePollution(fpDic)
+airPollution, groundPollution, fpDic = computePollution(fpDic)
 stdev_Ground, stdev_Air, stdev_Total = computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
 print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%\nRelative Standard Total Deviation: {stdev_Total}%')
 nd_Ground, nd_Air, nd_Total = numberFlightsDelayed(fpDic)
@@ -412,7 +430,7 @@ fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = computeTotalD
 print(f'Total exempt delay: {totalExemptDelay} min\nTotal ground delay: {totalGroundDelay} min\nTotal not affected delay: {totalNotAffectedDelay} min')
 fpDic = assignCTAandCTD(fpDic)
 printUnrecGDelay(fpDic, rStart)
-computePollution(fpDic)
+airPollution, groundPollution, fpDic = computePollution(fpDic)
 stdev_Ground, stdev_Air, stdev_Total= computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
 print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%\nRelative Standard Total Deviation: {stdev_Total}%')
 nd_Ground, nd_Air, nd_Total = numberFlightsDelayed(fpDic)
@@ -427,7 +445,7 @@ av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
 print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
 
 #--------------------------------------------------------------------------------------------
-extra = True    # Set to False to execute wp3
+extra = False    # Set to False to execute wp3
 if extra:
     airDelays = []
     groundDelays = []
@@ -446,7 +464,7 @@ if extra:
         groundDelays.append(totalGroundDelay)
         fpDic = assignCTAandCTD(fpDic)
         unrecDelays.append(printUnrecGDelay(fpDic, rStart))
-        airPollution, groundPollution = computePollution(fpDic)
+        airPollution, groundPollution, fpDic = computePollution(fpDic)
         airCO2.append(airPollution)
         groundCO2.append(groundPollution)
     
@@ -495,7 +513,7 @@ if extra:
         groundDelays.append(totalGroundDelay)
         fpDic = assignCTAandCTD(fpDic)
         unrecDelays.append(printUnrecGDelay(fpDic, rStart))
-        airPollution, groundPollution = computePollution(fpDic)
+        airPollution, groundPollution, fpDic = computePollution(fpDic)
         airCO2.append(airPollution)
         groundCO2.append(groundPollution)
         
