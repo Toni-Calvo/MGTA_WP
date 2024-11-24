@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from wp1 import main, getSlots, assignSlots
+from wp3 import filterFPs
 
 # Redefine all dataç
 distances = {
@@ -23,10 +25,18 @@ timeByTrain = {
     "LFML": 289, "LFLL": 301
 } #min
 
+timeByPlane = { 
+    "LEGE": 38, "LERS": 88, "LEDA": 58, "LEZG": 82, "LEPP": 234, "LESO": 381, 
+    "LEVC": 172, "LEAL": 323, "LEVT": 296, "LEAB": 359, "LEGR": 386, "LEMG": 381, 
+    "LEBA": 291, "LEZL": 347, "LEMD": 149, "LFMP": 81, "LFMT": 185, 
+    "LFML": 289, "LFLL": 301
+}
+
+
 D2D_Train = {key: timeByTrain[key] + meanTimeToTrainStation + meanTimeSecurityCheckpoints_TrainStation + meanTimeFromTrainStation_BCN 
              for key in timeByTrain}
 
-D2D_Airplane = {key: timeByTrain[key] + meanTimeToAirport + meanTimeFacturationAndSecurityCheckpoints_Airport + meanTimeToExitAirport + meanTimeFromAirport_BCN
+D2D_Airplane = {key: timeByPlane[key] + meanTimeToAirport + meanTimeFacturationAndSecurityCheckpoints_Airport + meanTimeToExitAirport + meanTimeFromAirport_BCN
                 for key in timeByTrain}
 
 CO2_Train = {
@@ -97,3 +107,24 @@ plt.tight_layout()
 
 # Show plot
 plt.show()
+
+# --------------------------------------------------------------------------------------------
+AAR = 38
+PAAR = 12
+rStart = 8
+rEnd = 13
+arrivals, HnoReg = main()
+fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
+#fpDic = filterFPs(fpDic, rStart, HnoReg)
+
+todo = ["LEGE", "LERS", "LEDA", "LEZG", "LEPP", "LESO", "LEVC", "LEAL", "LEVT", "LEAB", "LEGR", "LEMG", "LEBA", "LEZL", "LEMD", "LFMP", "LFMT", "LFML", "LFLL"]
+
+for key in fpDic:
+    if fpDic.get(key) == None:
+        continue
+    
+    if fpDic.get(key).get("departure_airport") in todo:
+        todo.remove(fpDic.get(key).get("departure_airport"))
+        time = fpDic.get(key).get("aHour") * 60 + fpDic.get(key).get("aMin") - fpDic.get(key).get("dHour") * 60 - fpDic.get(key).get("dMin")
+        print(f'{fpDic.get(key).get("departure_airport")} -> {time}')
+        

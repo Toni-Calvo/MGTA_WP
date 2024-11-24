@@ -1,6 +1,6 @@
 import scipy as sp
 import numpy as np
-from wp1 import main, isInECAC, getDistance, getSlots, plotSlotsArrOverTime, assignSlots, getCategory
+from wp1 import main, getSlots, assignSlots, getCategory
 from wp2 import getAirConsumption, getGroundConsumption, defineType
 
 # --------------------------------------------------------------------------------------------
@@ -270,11 +270,12 @@ def computeAvrgForCategory(cost):
         
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
+do = True # Set to false to execute wp4
 
-arrivals, HnoReg = main()
-arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
-fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
-fpDic = filterFPs(fpDic, rStart, HnoReg)
-cost = cost_file("cost.ALL_FT+")
-buildMatrix(fpDic)
-print()
+if do:
+    arrivals, HnoReg = main()
+    arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+    fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
+    fpDic = filterFPs(fpDic, rStart, HnoReg)
+    cost = cost_file("cost.ALL_FT+")
+    buildMatrix(fpDic)
