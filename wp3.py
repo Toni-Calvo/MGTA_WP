@@ -193,7 +193,6 @@ def cost_file(filepath):
 
 def computeAvrgForCategory(cost):
     """Computes the average cost for each category."""
-    escalado = 1.2
     b = 0
     tb = [0] * 8
     c = 0
@@ -259,13 +258,13 @@ def computeAvrgForCategory(cost):
             tf[6] += aircraft.get('cost_ad_1530')
             tf[7] += aircraft.get('cost_ad_3060')
     
-    cost.update({'A' : {'cost_gd_0005' : round(tb[0]/b, 2) * escalado, 'cost_gd_0515' : round(tb[1]/b, 2) * escalado, 'cost_gd_1530' : round(tb[2]/b, 2) * escalado, 'cost_gd_3060' : round(tb[3]/b, 2) * escalado, 'cost_ad_0005' : round(tb[4]/b, 2) * escalado, 'cost_ad_0515' : round(tb[5]/b, 2) * escalado, 'cost_ad_1530' : round(tb[6]/b, 2) * escalado, 'cost_ad_3060' : round(tb[7]/b, 2) * escalado}})
     cost.update({'B' : {'cost_gd_0005' : round(tb[0]/b, 2), 'cost_gd_0515' : round(tb[1]/b, 2), 'cost_gd_1530' : round(tb[2]/b, 2), 'cost_gd_3060' : round(tb[3]/b, 2), 'cost_ad_0005' : round(tb[4]/b, 2), 'cost_ad_0515' : round(tb[5]/b, 2), 'cost_ad_1530' : round(tb[6]/b, 2), 'cost_ad_3060' : round(tb[7]/b, 2)}})
     cost.update({'C' : {'cost_gd_0005' : round(tc[0]/c, 2), 'cost_gd_0515' : round(tc[1]/c, 2), 'cost_gd_1530' : round(tc[2]/c, 2), 'cost_gd_3060' : round(tc[3]/c, 2), 'cost_ad_0005' : round(tc[4]/c, 2), 'cost_ad_0515' : round(tc[5]/c, 2), 'cost_ad_1530' : round(tc[6]/c, 2), 'cost_ad_3060' : round(tc[7]/c, 2)}})
     cost.update({'D' : {'cost_gd_0005' : round(td[0]/d, 2), 'cost_gd_0515' : round(td[1]/d, 2), 'cost_gd_1530' : round(td[2]/d, 2), 'cost_gd_3060' : round(td[3]/d, 2), 'cost_ad_0005' : round(td[4]/d, 2), 'cost_ad_0515' : round(td[5]/d, 2), 'cost_ad_1530' : round(td[6]/d, 2), 'cost_ad_3060' : round(td[7]/d, 2)}})
     cost.update({'E' : {'cost_gd_0005' : round(te[0]/e, 2), 'cost_gd_0515' : round(te[1]/e, 2), 'cost_gd_1530' : round(te[2]/e, 2), 'cost_gd_3060' : round(te[3]/e, 2), 'cost_ad_0005' : round(te[4]/e, 2), 'cost_ad_0515' : round(te[5]/e, 2), 'cost_ad_1530' : round(te[6]/e, 2), 'cost_ad_3060' : round(te[7]/e, 2)}})
     cost.update({'F' : {'cost_gd_0005' : round(tf[0]/f, 2), 'cost_gd_0515' : round(tf[1]/f, 2), 'cost_gd_1530' : round(tf[2]/f, 2), 'cost_gd_3060' : round(tf[3]/f, 2), 'cost_ad_0005' : round(tf[4]/f, 2), 'cost_ad_0515' : round(tf[5]/f, 2), 'cost_ad_1530' : round(tf[6]/f, 2), 'cost_ad_3060' : round(tf[7]/f, 2)}})
-    
+    cost.update({'A' : {'cost_gd_0005' : round((tb[0]/b) * ((tb[0]/b)/(tc[0]/c)), 2), 'cost_gd_0515' : round((tb[1]/b) * ((tb[1]/b)/(tc[1]/c)), 2), 'cost_gd_1530' : round((tb[2]/b) * ((tb[2]/b)/(tc[2]/c)), 2), 'cost_gd_3060' : round((tb[3]/b) * ((tb[3]/b)/(tc[3]/c)), 2), 'cost_ad_0005' : round((tb[4]/b) * ((tb[4]/b)/(tc[4]/c)), 2), 'cost_ad_0515' : round((tb[5]/b) * ((tb[5]/b)/(tc[5]/c)), 2), 'cost_ad_1530' : round((tb[6]/b) * ((tb[6]/b)/(tc[0]/c)), 2), 'cost_ad_3060' : round((tb[7]/b) * ((tb[7]/b)/(tc[7]/c)), 2)}})
+
     return cost
         
 # --------------------------------------------------------------------------------------------
