@@ -10,10 +10,10 @@ PAAR = 12   # REDUCED CAPACITY
 rStart = 8 # h
 rEnd = 13 # h
 margin = 30 # min DO NOT CHANGE
-radius = 1500 # km
+radius = 2000 # km
 CO2Factor = 3.16 # kg CO2 / kg fuel
 cancelledAirline = 'VLG'
-maxDelay = 190 # min
+maxDelay = 170 # min
 
 groundConsumption = {'A321' : 600, 'A320' : 600, 'B737' : 600, 'B738' : 600, 'C510' : 200, 'PC12' : 200, 'C25A' : 200, 'B733' : 400,
                      'A319' : 600, 'E145' : 400, 'E190' : 400, 'LJ60' : 200, 'B77W' : 1000, 'B350' : 200, 'B764' : 800, 'CRJX' : 400,
@@ -402,7 +402,7 @@ print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaxim
 av_GroundDelay = totalGroundDelay/nd_Ground
 av_AirDelay = totalExemptDelay/nd_Air
 av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
-print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
+print(f'Average Ground Delay: {round(av_GroundDelay, 2)} min/ac\nAverage Air Delay: {round(av_AirDelay, 2)} min/ac\nAverage Total Delay: {round(av_TotalDelay, 2)} min/ac')
 
 
 # Cancelled flights (Not need for metrics yet)
@@ -424,10 +424,10 @@ print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaxim
 av_GroundDelay = totalGroundDelay/nd_Ground
 av_AirDelay = totalExemptDelay/nd_Air
 av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
-print(f'Average Ground Delay: {round(av_GroundDelay)} min/ac\nAverage Air Delay: {round(av_AirDelay)} min/ac\nAverage Total Delay: {round(av_TotalDelay)} min/ac')
+print(f'Average Ground Delay: {round(av_GroundDelay, 2)} min/ac\nAverage Air Delay: {round(av_AirDelay, 2)} min/ac\nAverage Total Delay: {round(av_TotalDelay, 2)} min/ac')
 
 #--------------------------------------------------------------------------------------------
-extra = True    # Set to False to execute wp3
+extra = False    # Set to False to execute wp3
 if extra:
     airDelays = []
     groundDelays = []
