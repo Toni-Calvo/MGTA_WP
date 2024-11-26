@@ -7,7 +7,7 @@ from wp2 import getAirConsumption, getGroundConsumption, defineType
 # GLOBAL VARIABLES
 Hfile = 6
 margin = 30 # min DO NOT CHANGE
-radius = 1500 # km
+radius = 2000 # km
 AAR = 38
 PAAR = 12
 rStart = 8
