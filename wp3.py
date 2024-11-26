@@ -297,9 +297,11 @@ def getWP3Results():
     return fpDic
 
 
-def calculateCostsFromWP2():
+def calculateCostsFromWP2(fpDic=None):
     """Calculates the cost of the flight plan assignment done in WP2."""
-    fpDic = getWP2Results()
+    if fpDic is None:
+        fpDic = getWP2Results()
+        
     cost = cost_file("cost.ALL_FT+")
     totalCost = 0
     keys = list(fpDic.keys())
