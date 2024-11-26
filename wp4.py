@@ -1,7 +1,18 @@
 import matplotlib.pyplot as plt
-from wp1 import getAvaliableSeats
-from wp2 import getWP2Results
-from wp3 import getWP3Results
+from wp1 import getAvaliableSeats, main
+import wp2
+import wp3
+
+Hfile = 6 # h
+AAR = 38    # NOMINAL CAPACITY
+PAAR = 12   # REDUCED CAPACITY
+rStart = 8 # h
+rEnd = 13 # h
+margin = 30 # min DO NOT CHANGE
+radius = 2000 # km
+CO2Factor = 3.16 # kg CO2 / kg fuel
+cancelledAirline = 'VLG'
+maxDelay = 170 # min
 
 # Redefine all data
 """"distances = {
@@ -150,7 +161,7 @@ plt.tight_layout()
 plt.show()
 
 # --------------------------------------------------------------------------------------------
-fpDic = getWP2Results()
+fpDic = wp2.getWP2Results()
 
 todo = ["LEZG", "LESO", "LEVC", "LEAL","LEGR", "LEMG", "LEZL", "LEMD","LFML", "LFLL"]
 airplaneDelay = {}
@@ -223,7 +234,7 @@ plt.tight_layout()
 # Show plot
 plt.show()
 # --------------------------------------------------------------------------------------------
-fpDic = getWP3Results()
+fpDic = wp3.getWP3Results()
 
 todo = ["LEZG", "LESO", "LEVC", "LEAL","LEGR", "LEMG", "LEZL", "LEMD","LFML", "LFLL"]
 airplaneDelay = {}
@@ -299,3 +310,80 @@ plt.tight_layout()
 
 # Show plot
 plt.show()
+
+# --------------------------------------------------------------------------------------------
+print("\n\n\n")
+print("-------------------- WP2 --------------------")
+todo = ["LEZG", "LESO", "LEVC", "LEAL","LEGR", "LEMG", "LEZL", "LEMD","LFML", "LFLL"]
+arrivals, HnoReg = main()
+arrivals2 = arrivals.copy()
+for FP in arrivals2:
+    if FP.get('departure_airport') in todo:
+        arrivals.remove(FP)
+
+slots = wp2.getSlots(AAR, PAAR, rStart, rEnd)
+arrivals = wp2.defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+exempt, rest = wp2.separateFlights(arrivals)
+fpDic = wp2.assignSlots(exempt, rest, slots)
+
+fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = wp2.computeTotalDelays(fpDic)
+print(f'Total exempt delay: {totalExemptDelay} min\nTotal ground delay: {totalGroundDelay} min\nTotal not affected delay: {totalNotAffectedDelay} min')
+wp2.plotSlotsArrOverTime(fpDic, True)
+wp2.printFlightTypes(fpDic)
+fpDic = wp2.assignCTAandCTD(fpDic)
+wp2.printUnrecGDelay(fpDic, rStart)
+airPollution, groundPollution, fpDic = wp2.computePollution(fpDic)
+stdev_Ground, stdev_Air, stdev_Total = wp2.computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
+print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%\nRelative Standard Total Deviation: {stdev_Total}%')
+nd_Ground, nd_Air, nd_Total = wp2.numberFlightsDelayed(fpDic)
+print(f'Ground Delayed Flights: {nd_Ground} aircrafts\nAir Delayed Flights: {nd_Air} aircrafts\nTotal Delayed Flights: {nd_Total} aircrafts')
+nd_Ground15, nd_Air15, nd_Total15 = wp2.numberFlightsDelayedPlus15min(fpDic)
+print(f'Ground Delayed Flights >15 min: {nd_Ground15} aircrafts\nAir Delayed Flights >15 min: {nd_Air15} aircrafts\nTotal Delayed Flights >15 min: {nd_Total15} aircrafts')
+maxGD, maxAD, maxTD = wp2.maximumDelay(fpDic)
+print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaximum Delay: {maxTD} min')
+av_GroundDelay = totalGroundDelay/nd_Ground
+av_AirDelay = totalExemptDelay/nd_Air
+av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
+print(f'Average Ground Delay: {round(av_GroundDelay, 2)} min/ac\nAverage Air Delay: {round(av_AirDelay, 2)} min/ac\nAverage Total Delay: {round(av_TotalDelay, 2)} min/ac')
+
+
+# Cancelled flights (Not need for metrics yet)
+print('\n\n\n')
+notCancelledDelay = wp2.getDelay(fpDic, cancelledAirline)
+wp2.cancelledFlights(fpDic, cancelledAirline, maxDelay, slots)
+cancelledDelay = wp2.getDelay(fpDic, cancelledAirline)
+fpDic, totalExemptDelay, totalGroundDelay, totalNotAffectedDelay = wp2.computeTotalDelays(fpDic)
+print(f'Total exempt delay: {totalExemptDelay} min\nTotal ground delay: {totalGroundDelay} min\nTotal not affected delay: {totalNotAffectedDelay} min')
+fpDic = wp2.assignCTAandCTD(fpDic)
+wp2.printUnrecGDelay(fpDic, rStart)
+airPollution, groundPollution, fpDic = wp2.computePollution(fpDic)
+stdev_Ground, stdev_Air, stdev_Total= wp2.computeRelativeStandardDeviation (fpDic,totalGroundDelay,totalExemptDelay)
+print(f'Relative Standard Ground Delay Deviation: {stdev_Ground}%\nRelative Standard Air Delay Deviation: {stdev_Air}%\nRelative Standard Total Deviation: {stdev_Total}%')
+nd_Ground, nd_Air, nd_Total = wp2.numberFlightsDelayed(fpDic)
+print(f'Ground Delayed Flights: {nd_Ground} aircrafts\nAir Delayed Flights: {nd_Air} aircrafts\nTotal Delayed Flights: {nd_Total} aircrafts')
+nd_Ground15, nd_Air15, nd_Total15 = wp2.numberFlightsDelayedPlus15min(fpDic)
+print(f'Ground Delayed Flights >15 min: {nd_Ground15} aircrafts\nAir Delayed Flights >15 min: {nd_Air15} aircrafts\nTotal Delayed Flights >15 min: {nd_Total15} aircrafts')
+maxGD, maxAD, maxTD = wp2.maximumDelay(fpDic)
+print(f'Maximum Ground Delay: {maxGD} min\nMaximum Air Delay: {maxAD} min\nMaximum Delay: {maxTD} min')
+av_GroundDelay = totalGroundDelay/nd_Ground
+av_AirDelay = totalExemptDelay/nd_Air
+av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
+print(f'Average Ground Delay: {round(av_GroundDelay, 2)} min/ac\nAverage Air Delay: {round(av_AirDelay, 2)} min/ac\nAverage Total Delay: {round(av_TotalDelay, 2)} min/ac')
+print(f'Delay Reduction on airline {cancelledAirline}: {notCancelledDelay - cancelledDelay} min ({round((notCancelledDelay - cancelledDelay)/notCancelledDelay*100, 2)}%)')
+
+# --------------------------------------------------------------------------------------------
+print("\n\n\n")
+print("-------------------- WP3 --------------------")
+arrivals, HnoReg = main()
+arrivals2 = arrivals.copy()
+for FP in arrivals2:
+    if FP.get('departure_airport') in todo:
+        arrivals.remove(FP)
+
+arrivals = wp3.defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+fpDic = wp3.assignSlots(arrivals, wp3.getSlots(AAR, PAAR, rStart, rEnd))
+fpDic = wp3.filterFPs(fpDic, rStart, HnoReg)
+cost = wp3.cost_file("cost.ALL_FT+")
+wp3.buildMatrix(fpDic, cost)
+wp3.setDelays(fpDic)
+wp3.calculateCostsFromWP2()
