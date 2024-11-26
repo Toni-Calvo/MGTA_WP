@@ -264,7 +264,7 @@ def computeAvrgForCategory(cost):
     cost.update({'E' : {'cost_gd_0005' : round(te[0]/e, 2), 'cost_gd_0515' : round(te[1]/e, 2), 'cost_gd_1530' : round(te[2]/e, 2), 'cost_gd_3060' : round(te[3]/e, 2), 'cost_ad_0005' : round(te[4]/e, 2), 'cost_ad_0515' : round(te[5]/e, 2), 'cost_ad_1530' : round(te[6]/e, 2), 'cost_ad_3060' : round(te[7]/e, 2)}})
     cost.update({'F' : {'cost_gd_0005' : round(tf[0]/f, 2), 'cost_gd_0515' : round(tf[1]/f, 2), 'cost_gd_1530' : round(tf[2]/f, 2), 'cost_gd_3060' : round(tf[3]/f, 2), 'cost_ad_0005' : round(tf[4]/f, 2), 'cost_ad_0515' : round(tf[5]/f, 2), 'cost_ad_1530' : round(tf[6]/f, 2), 'cost_ad_3060' : round(tf[7]/f, 2)}})
     cost.update({'A' : {'cost_gd_0005' : round((tb[0]/b) * ((tb[0]/b)/(tc[0]/c)), 2), 'cost_gd_0515' : round((tb[1]/b) * ((tb[1]/b)/(tc[1]/c)), 2), 'cost_gd_1530' : round((tb[2]/b) * ((tb[2]/b)/(tc[2]/c)), 2), 'cost_gd_3060' : round((tb[3]/b) * ((tb[3]/b)/(tc[3]/c)), 2), 'cost_ad_0005' : round((tb[4]/b) * ((tb[4]/b)/(tc[4]/c)), 2), 'cost_ad_0515' : round((tb[5]/b) * ((tb[5]/b)/(tc[5]/c)), 2), 'cost_ad_1530' : round((tb[6]/b) * ((tb[6]/b)/(tc[0]/c)), 2), 'cost_ad_3060' : round((tb[7]/b) * ((tb[7]/b)/(tc[7]/c)), 2)}})
-    
+
     return cost
 
 

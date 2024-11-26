@@ -459,8 +459,9 @@ av_TotalDelay = (totalExemptDelay+totalGroundDelay)/nd_Total
 print(f'Average Ground Delay: {round(av_GroundDelay, 2)} min/ac\nAverage Air Delay: {round(av_AirDelay, 2)} min/ac\nAverage Total Delay: {round(av_TotalDelay, 2)} min/ac')
 print(f'Delay Reduction on airline {cancelledAirline}: {notCancelledDelay - cancelledDelay} min ({round((notCancelledDelay - cancelledDelay)/notCancelledDelay*100, 2)}%)')
 
+
 #--------------------------------------------------------------------------------------------
-extra = True    # Set to False to execute wp3
+extra = False    # Set to False to execute wp3
 if extra:
     airDelays = []
     groundDelays = []
