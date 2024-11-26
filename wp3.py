@@ -1,7 +1,7 @@
 import scipy as sp
 import numpy as np
-from wp1 import main, isInECAC, getDistance, getSlots, plotSlotsArrOverTime, assignSlots, getCategory
-from wp2 import getAirConsumption, getGroundConsumption, defineType
+from wp1 import main, getSlots, assignSlots, getCategory
+from wp2 import getAirConsumption, getGroundConsumption, defineType, computePollution, getWP2Results
 
 # --------------------------------------------------------------------------------------------
 # GLOBAL VARIABLES
@@ -43,7 +43,7 @@ def filterFPs(fpDic, Hstart, HnoReg):
 
 
 
-def buildMatrix(fpDic):
+def buildMatrix(fpDic, cost):
     """Optimizes the slot allocation."""
     fligths = []
     for key in fpDic:
@@ -57,9 +57,9 @@ def buildMatrix(fpDic):
     for i in range(len(fligths)):
         for j in range(len(slots)):
             if j == len(slots) - 1:
-                costMatrix[i][j] = getCost(fligths[i], slots[j], slots[j])
+                costMatrix[i][j] = getCost(fligths[i], slots[j], slots[j], cost)
             else:
-                costMatrix[i][j] = getCost(fligths[i], slots[j], slots[j + 1])
+                costMatrix[i][j] = getCost(fligths[i], slots[j], slots[j + 1], cost)
     
     c = costMatrix.flatten()
     bounds = [(0, 1)] * len(c)
@@ -118,7 +118,7 @@ def buildMatrix(fpDic):
     
 
 
-def getRF(flightPlan, delay):
+def getRF(flightPlan, delay, cost):
     """Returns the cost of the delay."""
     aircraft = flightPlan.get('aircraft_type')
     if cost.get(aircraft) is None:
@@ -145,7 +145,7 @@ def getRF(flightPlan, delay):
     
     
     
-def getCost(flightPlan, slot, nextSlot):
+def getCost(flightPlan, slot, nextSlot, cost):
     """Returns the cost of a flight plan at a certain slot."""
     slotTime = int(slot.split(':')[0]) * 60 + int(slot.split(':')[1])
     nextSlotTime = int(nextSlot.split(':')[0]) * 60 + int(nextSlot.split(':')[1])
@@ -161,7 +161,7 @@ def getCost(flightPlan, slot, nextSlot):
     elif delay <= 0:
         return 0
     
-    return getRF(flightPlan, delay) * delay**(1+epsilon)
+    return getRF(flightPlan, delay, cost) * delay**(1+epsilon)
     
 
 
@@ -266,14 +266,69 @@ def computeAvrgForCategory(cost):
     cost.update({'A' : {'cost_gd_0005' : round((tb[0]/b) * ((tb[0]/b)/(tc[0]/c)), 2), 'cost_gd_0515' : round((tb[1]/b) * ((tb[1]/b)/(tc[1]/c)), 2), 'cost_gd_1530' : round((tb[2]/b) * ((tb[2]/b)/(tc[2]/c)), 2), 'cost_gd_3060' : round((tb[3]/b) * ((tb[3]/b)/(tc[3]/c)), 2), 'cost_ad_0005' : round((tb[4]/b) * ((tb[4]/b)/(tc[4]/c)), 2), 'cost_ad_0515' : round((tb[5]/b) * ((tb[5]/b)/(tc[5]/c)), 2), 'cost_ad_1530' : round((tb[6]/b) * ((tb[6]/b)/(tc[0]/c)), 2), 'cost_ad_3060' : round((tb[7]/b) * ((tb[7]/b)/(tc[7]/c)), 2)}})
 
     return cost
+
+
+
+def setDelays(fpDic):
+    """Sets the delay of each flight plan."""
+    for key in fpDic:
+        if fpDic.get(key) is not None:
+            delay = int(key.split(':')[0]) * 60 + int(key.split(':')[1]) - (fpDic.get(key).get('aHour') * 60 + fpDic.get(key).get('aMin'))
+            fpDic.get(key).update({'gDelay' : 0})
+            fpDic.get(key).update({'aDelay' : 0})
+            if fpDic.get(key).get('type') == 'Regulated':
+                fpDic.get(key).update({'gDelay' : delay})
+            else:
+                fpDic.get(key).update({'aDelay' : delay})
+    
+    return fpDic
+
+
+def getWP3Results():
+    """Gets the results of WP3."""
+    arrivals, HnoReg = main()
+    arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+    fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
+    fpDic = filterFPs(fpDic, rStart, HnoReg)
+    cost = cost_file("cost.ALL_FT+")
+    buildMatrix(fpDic, cost)
+    fpDic = setDelays(fpDic)
+    x, y, fpDic = computePollution(fpDic)
+    return fpDic
+
+
+def calculateCostsFromWP2():
+    """Calculates the cost of the flight plan assignment done in WP2."""
+    fpDic = getWP2Results()
+    cost = cost_file("cost.ALL_FT+")
+    totalCost = 0
+    keys = list(fpDic.keys())
+    index = 0
+    for key in fpDic:
+        index += 1
+        if fpDic.get(key) is None:
+            continue
         
+        if index == len(keys):
+            totalCost += getCost(fpDic.get(key), key, key, cost)
+        else:
+            totalCost += getCost(fpDic.get(key), key, keys[index], cost)
+
+    print(f'Total cost calculated from WP2: {round(totalCost, 2)} €')
+
 # --------------------------------------------------------------------------------------------
 # MAIN PROGRAM
+do = False # Set to false to execute wp4
 
-arrivals, HnoReg = main()
-arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
-fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
-fpDic = filterFPs(fpDic, rStart, HnoReg)
-cost = cost_file("cost.ALL_FT+")
-buildMatrix(fpDic)
-print()
+if do:
+    arrivals, HnoReg = main()
+    arrivals = defineType(arrivals, rStart, rEnd, margin, radius, Hfile, HnoReg)
+    fpDic = assignSlots(arrivals, getSlots(AAR, PAAR, rStart, rEnd))
+    fpDic = filterFPs(fpDic, rStart, HnoReg)
+    cost = cost_file("cost.ALL_FT+")
+    buildMatrix(fpDic, cost)
+    setDelays(fpDic)
+    calculateCostsFromWP2()
+    
+
+    
