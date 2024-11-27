@@ -16,6 +16,7 @@ rf = 1 # €/min
 epsilon = 0
 fuel_cost = 704.5 #$/t price of one ton of jet fuel at 15th of November
 fuel_cost = fuel_cost*0.948/1000 # €/kg
+CO2Factor = 3.16 # kg CO2 / kg fuel
 
 
 # --------------------------------------------------------------------------------------------
@@ -330,6 +331,22 @@ if do:
     cost = cost_file("cost.ALL_FT+")
     buildMatrix(fpDic, cost)
     setDelays(fpDic)
+    
+    airDelay = 0
+    groundDelay = 0
+    for key in fpDic:
+        if fpDic.get(key) is None:
+            continue
+        
+        groundDelay += fpDic.get(key).get('gDelay') 
+        airDelay += fpDic.get(key).get('aDelay')
+
+    print(f'Ground delay: {groundDelay} min')
+    print(f'Air delay: {airDelay} min')
+    print(f'Total delay: {airDelay + groundDelay} min')
+    computePollution(fpDic)
+    print("\n\n\n")
+    print("-------------------- WP2 ---------------------")
     calculateCostsFromWP2()
     
 

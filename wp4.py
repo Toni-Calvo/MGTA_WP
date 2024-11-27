@@ -13,6 +13,7 @@ radius = 2000 # km
 CO2Factor = 3.16 # kg CO2 / kg fuel
 cancelledAirline = 'VLG'
 maxDelay = 170 # min
+CO2Factor = 3.16 # kg CO2 / kg fuel
 
 # Redefine all data
 """"distances = {
@@ -386,4 +387,20 @@ fpDic2 = wp3.filterFPs(fpDic2, rStart, HnoReg)
 cost = wp3.cost_file("cost.ALL_FT+")
 wp3.buildMatrix(fpDic2, cost)
 wp3.setDelays(fpDic2)
+airDelay = 0
+groundDelay = 0
+for key in fpDic2:
+    if fpDic2.get(key) is None:
+        continue
+    
+    groundDelay += fpDic2.get(key).get('gDelay') 
+    airDelay += fpDic2.get(key).get('aDelay')
+
+print(f'Ground delay: {groundDelay} min')
+print(f'Air delay: {airDelay} min')
+print(f'Total delay: {airDelay + groundDelay} min')
+wp2.computePollution(fpDic2)
+
+print("\n\n\n")
+print("-------------------- WP2 ---------------------")
 wp3.calculateCostsFromWP2(fpDic)
